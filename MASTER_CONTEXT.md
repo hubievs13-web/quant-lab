@@ -314,6 +314,6 @@ Summary:
 - Short direct responses. One concrete next action. No long theory
   unless requested.
 - Append logs; never overwrite history.
-- Do not produce strategy code before research gates in Section 4
-  pass. Do not revive rejected hypotheses (Section 6) without new
-  external evidence approved by the user.
+- Do not produce strategy code before research gates in Sections 4
+  to 6 pass. Do not revive rejected hypotheses (Section 10) without
+  new external evidence approved by the user.
