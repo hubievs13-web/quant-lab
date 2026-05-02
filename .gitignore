@@ -1,0 +1,43 @@
+# Large / generated data
+data/
+results/raw/
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+
+# Large datasets / logs
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.jsonl
+*.log
+
+# Ignore CSV by default, but keep experiment summary
+*.csv
+!results/experiments.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+*.token
+secrets.*
+credentials.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
