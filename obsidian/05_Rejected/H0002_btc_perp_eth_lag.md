@@ -1,7 +1,7 @@
 ---
 id: H0002
 slug: btc_perp_eth_lag
-status: draft
+status: rejected
 created: 2026-04-29
 mechanism_class: lead_lag
 symbols: [BTCUSDT, ETHUSDT]

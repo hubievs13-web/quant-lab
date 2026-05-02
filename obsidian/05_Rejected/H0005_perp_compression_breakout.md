@@ -1,7 +1,7 @@
 ---
 id: H0005
 slug: perp_compression_breakout
-status: draft
+status: rejected
 created: 2026-04-29
 mechanism_class: orderflow
 symbols: [BTCUSDT, ETHUSDT]
