@@ -24,7 +24,7 @@ pages, and a QC-Lean error library.
 1. `obsidian/00_START_HERE.md`
 2. `obsidian/00_HOT.md`
 3. `obsidian/00_INDEX.md` (only if navigation needed; until Step 5 of
-   the migration is approved, fall back to `obsidian/00_Index.md`)
+   the migration is approved, fall back to `obsidian/00_INDEX.md`)
 4. Targeted linked files only.
 
 `MASTER_CONTEXT.md` and `PROJECT_INSTRUCTIONS.md` are read on demand,

@@ -55,7 +55,7 @@ navigation cheaper.
 - `00_START_HERE.md`  this file. First read.
 - `00_HOT.md`         shortest current project state. Second read.
 - `00_INDEX.md`       navigation map (created by Step 5 of the
-  migration; until then use the existing `obsidian/00_Index.md`).
+  migration; until then use the existing `obsidian/00_INDEX.md`).
 - `00_INGEST_LOG.md`  append-only log of sources ingested into the
   wiki.
 - `00_LINT_REPORT.md` wiki health snapshot. Generated on demand.

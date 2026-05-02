@@ -1,5 +1,12 @@
 # Engineer prompt (paste as-is, then replace Hxxxx_<slug>)
 
+> Default operating mode: LOW TOKEN MODE per `.codex/AGENTS.md`
+> Section 14. Default read order for incidental reads:
+> `obsidian/00_START_HERE.md` -> `obsidian/00_HOT.md` ->
+> `obsidian/00_INDEX.md` (only when navigation is needed) ->
+> targeted linked files only. The required reads listed below
+> apply when actually producing engineer output.
+
 You are acting as engineer. Read .codex/AGENTS.md and
 .codex/roles/engineer.md. Read obsidian/01_Rules/ in full. Read the
 hypothesis at obsidian/02_Hypotheses/Hxxxx_<slug>.md and the candidate
