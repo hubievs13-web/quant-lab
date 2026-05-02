@@ -258,7 +258,7 @@ forbidden. A new hypothesis requires a distinct mechanism.
 ## 11. Obsidian knowledge base contract
 
 - Vault root: `obsidian/`.
-- Folders are fixed; see `obsidian/00_Index.md`.
+- Folders are fixed; see `obsidian/00_INDEX.md`.
 - Templates are under each folder, prefixed with `_TEMPLATE_`. Codex
   creates new notes by copying a template and filling it.
 - File naming:

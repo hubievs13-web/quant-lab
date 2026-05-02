@@ -21,7 +21,7 @@ quant-lab/
       engineer.md
       auditor.md
   obsidian/                   # Obsidian vault root
-    00_Index.md
+    00_INDEX.md
     01_Rules/
       00_Hard_Rules.md
       01_Falsification_Framework_V3.md
