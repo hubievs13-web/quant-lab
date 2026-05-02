@@ -1,7 +1,7 @@
 ---
 id: H0007
 slug: funding_settlement_unwind
-status: draft
+status: rejected
 created: 2026-05-01
 mechanism_class: funding
 symbols: [BTCUSDT, ETHUSDT]
