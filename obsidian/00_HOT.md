@@ -1,47 +1,39 @@
 # 00_HOT
 
-Shortest current project state. Skeleton (v0).
-
-This file is filled in Step 6 of the migration from canonical files
-only (`MASTER_CONTEXT.md`, `experiments_log.md`,
-`obsidian/02_Hypotheses/`, `obsidian/05_Rejected/`,
-`obsidian/06_Passed/`). It is updated by Codex auditor mode after
-every verdict.
-
-Hard cap: ~40 lines. If this file grows past that, trim it; do not
-turn it into a long-form note.
+Shortest current project state. Updated 2026-05-02.
 
 ## Current phase
 
-TBD (Step 6 will populate).
+H0008 engineer package created. Awaiting ChatGPT code review of
+`strategies/H0008_funding_premium_crowding_unwind/main.py` and
+`obsidian/03_Strategies/S0008_funding_premium_crowding_unwind.md`.
+No backtest, smoke test, or profitability claim is authorized.
 
 ## Active hypothesis
 
-TBD (Step 6 will populate from `obsidian/02_Hypotheses/`).
+H0008_funding_premium_crowding_unwind (status: draft, 2026-05-02).
 
 ## Last verdict
 
-TBD (Step 6 will populate from the last line of
-`experiments_log.md`).
+2026-05-01 | H0007 | FAIL / REJECTED | 509 trades | sharpe -5.112 |
+avg post-fee -0.1602% | max DD 48.9% | reject permanently, no tuning.
 
-## Last 3 rejected hypothesis IDs
+## Rejected hypotheses
 
-TBD (Step 6 will populate from `obsidian/05_Rejected/`).
+Count: 7 (H0001-H0007). Last 3 by date: H0007 (2026-05-01),
+H0005 (2026-04-29), H0002 (2026-04-29).
 
-## Top forbidden follow-ups
+## Allowed next action
 
-TBD (Step 6 will populate from `MASTER_CONTEXT.md` "Forbidden
-follow-ups" section).
+Send H0008 / S0008 package to ChatGPT for code review only. Do not
+run a backtest or smoke test before separate user approval.
 
-## Top open question
+## Read first / do not read
 
-TBD.
-
-## Pointers
-
-- Full handoff context: `MASTER_CONTEXT.md` (read only when needed).
-- Project-level rules: `PROJECT_INSTRUCTIONS.md` (read only when
-  needed).
-- Hard rules: `.codex/AGENTS.md` and `obsidian/01_Rules/`.
-- Append-only verdict log: `experiments_log.md`.
-- Structured verdict log: `results/experiments.csv` (do not bulk-load).
+Read first: `obsidian/00_START_HERE.md` -> this file ->
+`obsidian/00_INDEX.md` (only when navigation is needed) -> targeted
+linked files only. Do not read by default: `results/raw/`,
+`results/trades/`, `results/orders/`, `results/logs/`,
+`results/reports/`; any file > 5 MB;
+`obsidian/04_Backtests/**/statistics.json` and `*_logs.txt`;
+`obsidian/raw/`; strategy `main.py` for non-active hypotheses.
