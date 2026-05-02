@@ -3,11 +3,8 @@
 Navigation map of the Obsidian vault. Read this only when you need
 to find something. Otherwise stop after `00_HOT.md`.
 
-This file replaces `00_Index.md` (case-aware Git rename, Step 5 of
-the LLM Wiki migration). Original content is preserved verbatim
-below the separator.
-
-Hard cap: ~120 lines.
+Replaces `00_Index.md` (case-aware Git rename). Original content
+preserved verbatim below the separator.
 
 ## Wiki layer entry points
 
@@ -68,10 +65,6 @@ Hard cap: ~120 lines.
 - `obsidian/04_Backtests/**/statistics.json` and `*_logs.txt`.
 - `obsidian/raw/` (read the matching summary instead).
 - Strategy `main.py` for hypotheses other than the one being worked on.
-
----
-
-Below: original `00_Index.md` content, preserved verbatim.
 
 ---
 
