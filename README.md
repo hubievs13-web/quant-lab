@@ -146,3 +146,21 @@ See `.codex/README.md` and `.codex/AGENTS.md` for the full contract.
   a distinct-from-rejected section.
 - Final verdicts (PASS / FAIL / INCONCLUSIVE) come only from the Devin
   chat. Scripts and Codex roles produce DRAFT verdicts only.
+
+## Low Token Mode
+
+Agents operating on this repo (Codex, Devin chat, etc.) default
+to LOW TOKEN MODE. Canonical definition: `.codex/AGENTS.md`
+Section 14. Summary:
+
+- Read `obsidian/00_START_HERE.md` -> `obsidian/00_HOT.md` ->
+  `obsidian/00_INDEX.md` (only when navigation is needed) ->
+  targeted linked files only.
+- No full repo scans. No files > 5 MB without explicit user approval.
+- Prefer `obsidian/wiki/` summaries over raw files. Do not read
+  `results/raw/` or `data/` by default.
+- Short direct responses. One concrete next action. No long theory
+  unless requested.
+- Do not produce strategy code before research gates pass. Do not
+  revive rejected hypotheses without new external evidence.
+- Append logs; never overwrite history.

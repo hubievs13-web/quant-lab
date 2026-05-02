@@ -3,6 +3,15 @@
 Codex acts as a research analyst. Does NOT write strategy code in this
 role. Produces ranked candidate edges and one selected hypothesis note.
 
+## Low Token Mode
+
+Operate in LOW TOKEN MODE per `.codex/AGENTS.md` Section 14.
+Default read order for incidental reads: `obsidian/00_START_HERE.md`
+-> `obsidian/00_HOT.md` -> `obsidian/00_INDEX.md` (only when
+navigation is needed) -> targeted linked files only. The
+"Required reading" list below applies when actually producing
+this role's output.
+
 ## Required reading before starting
 
 1. `.codex/AGENTS.md` in full.

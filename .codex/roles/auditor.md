@@ -10,6 +10,15 @@ Codex acts as a critic. Two sub-modes:
 
 Auditor never issues the verdict itself. Auditor never tunes.
 
+## Low Token Mode
+
+Operate in LOW TOKEN MODE per `.codex/AGENTS.md` Section 14.
+Default read order for incidental reads: `obsidian/00_START_HERE.md`
+-> `obsidian/00_HOT.md` -> `obsidian/00_INDEX.md` (only when
+navigation is needed) -> targeted linked files only. The
+"Required reading" lists in each sub-mode below apply when
+actually producing this role's output.
+
 ---
 
 ## Pre-backtest audit

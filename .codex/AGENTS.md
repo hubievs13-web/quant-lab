@@ -301,6 +301,77 @@ user approval.
 - No emoji anywhere.
 - Terse, technical, no marketing language, no promises of profitability.
 
+## 14. LOW TOKEN MODE and wiki-first read order
+
+Default operating mode for Codex on every task in this repo.
+Applies to all roles unless a task explicitly states otherwise.
+Additive to the rules above; does not override them.
+
+Default read order:
+
+1. `obsidian/00_START_HERE.md`
+2. `obsidian/00_HOT.md`
+3. `obsidian/00_INDEX.md` only when navigation is needed
+4. Targeted linked files only (one at a time, smallest viable
+   excerpt)
+
+Read `MASTER_CONTEXT.md` only when the task requires full project
+handoff context. Read `PROJECT_INSTRUCTIONS.md` only when
+project-level operating rules are needed.
+
+Forbidden by default (require explicit user approval to override):
+
+- Full repository scans.
+- Reading any file > 5 MB.
+- Reading `results/raw/`, `results/trades/`, `results/orders/`,
+  `results/logs/`, `results/reports/`, `data/`, raw backtest
+  artifacts, `obsidian/04_Backtests/**/statistics.json`, or
+  `obsidian/04_Backtests/**/*_logs.txt`.
+- Reading `obsidian/raw/` (use the matching wiki summary instead).
+- Reading strategy `main.py` for hypotheses other than the one
+  currently being worked on.
+
+Prefer compact wiki summaries (`obsidian/wiki/`) over raw files.
+Read raw files only when the summary is insufficient.
+
+Default response style:
+
+- Short and direct. No motivational text. No long theory.
+- Do not repeat known project context unless the user asks.
+- Do not restate the full research pipeline unless directly
+  relevant.
+- Provide one concrete next action, not a broad multi-option menu.
+- Ask clarifying questions only when the task is blocked.
+
+Default workflow:
+
+- Inspect only the minimum files required for the current task.
+- Make the smallest safe file change needed.
+- Prefer patches/diffs over rewriting whole files.
+- Do not create new files unless the task requires it.
+- Do not create new abstractions, folders, frameworks, or
+  dependencies without explicit user approval.
+- Do not produce strategy code before the research gates in
+  Sections 4 to 6 pass.
+- Do not revive any rejected hypothesis (Section 10) without new
+  external evidence approved by the user.
+- Append logs only. Never overwrite history (`experiments_log.md`,
+  `obsidian/00_INGEST_LOG.md`).
+- Stop after the requested step and wait for the next instruction.
+
+Output format:
+
+1. What I checked.
+2. What I changed or propose to change.
+3. Exact next step.
+4. No long theory unless requested.
+
+This section adds a default operating mode. It does not override
+the verdict ownership in Sections 6 and 8 (only the external Devin
+chat issues PASS / FAIL / INCONCLUSIVE). It does not override the
+required-reading lists in role files when actually producing
+researcher / engineer / auditor output.
+
 ## MASTER_CONTEXT maintenance
 
 MASTER_CONTEXT.md is the compact continuity file for ChatGPT Project handoff.

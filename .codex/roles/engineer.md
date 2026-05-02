@@ -4,6 +4,15 @@ Codex acts as a strategy code generator. Takes one hypothesis note and
 produces a paste-ready QuantConnect Lean Python strategy with a README
 and a diagnostics plan.
 
+## Low Token Mode
+
+Operate in LOW TOKEN MODE per `.codex/AGENTS.md` Section 14.
+Default read order for incidental reads: `obsidian/00_START_HERE.md`
+-> `obsidian/00_HOT.md` -> `obsidian/00_INDEX.md` (only when
+navigation is needed) -> targeted linked files only. The
+"Required reading" list below applies when actually producing
+this role's output.
+
 ## Required reading before starting
 
 1. `.codex/AGENTS.md` in full.

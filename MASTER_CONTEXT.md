@@ -293,3 +293,27 @@ After Codex updates MASTER_CONTEXT.md, the user must upload/replace the updated 
 
 Codex update protocol:
 MASTER_CONTEXT_UPDATE_PROTOCOL.md
+
+## 12. Low Token Mode
+
+Codex and any agent operating on this repo must default to LOW
+TOKEN MODE. Canonical definition: `.codex/AGENTS.md` Section 14.
+Summary:
+
+- Read `obsidian/00_START_HERE.md` first, then `obsidian/00_HOT.md`,
+  then `obsidian/00_INDEX.md` only when navigation is needed, then
+  targeted linked files only.
+- Read MASTER_CONTEXT.md (this file) only when full handoff
+  context is required.
+- No full repo scans. No files > 5 MB without explicit user approval.
+- Prefer `obsidian/wiki/` summaries over raw files. Do not read
+  `results/raw/`, `results/trades/`, `results/orders/`,
+  `results/logs/`, `results/reports/`, `data/`, or
+  `obsidian/04_Backtests/**/statistics.json` and
+  `obsidian/04_Backtests/**/*_logs.txt` by default.
+- Short direct responses. One concrete next action. No long theory
+  unless requested.
+- Append logs; never overwrite history.
+- Do not produce strategy code before research gates in Section 4
+  pass. Do not revive rejected hypotheses (Section 6) without new
+  external evidence approved by the user.
