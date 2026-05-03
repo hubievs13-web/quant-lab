@@ -1,6 +1,6 @@
 # Outcome Summary
 
-Last refresh: 2026-05-03 13:12 UTC.
+Last refresh: 2026-05-03 13:39 UTC.
 Source: `data_layer/store/processed/outcomes/binance/<SYMBOL>/<TF>.parquet`.
 Anchor: bar AFTER event (next-bar entry; no same-bar contamination).
 Counts are complete only. Rows with n < 10 omitted to keep the report compact; full table is in the leaderboard parquet.
@@ -9,26 +9,26 @@ Counts are complete only. Rows with n < 10 omitted to keep the report compact; f
 
 | event | h | n | fwd | hit | MFE | MAE |
 |---|---|---|---|---|---|---|
-| FUNDING_WINDOW_PRE | h+1 | 84 | +0.00% | 49% | +0.05% | -0.05% |
-| FUNDING_WINDOW_PRE | h+3 | 84 | +0.01% | 61% | +0.09% | -0.08% |
-| FUNDING_WINDOW_PRE | h+12 | 84 | +0.05% | 55% | +0.22% | -0.16% |
-| FUNDING_WINDOW_PRE | h+72 | 84 | +0.08% | 51% | +0.65% | -0.39% |
-| FUND_FLIP | h+1 | 12 | -0.01% | 50% | +0.05% | -0.07% |
-| FUND_FLIP | h+3 | 12 | -0.02% | 50% | +0.11% | -0.10% |
-| FUND_FLIP | h+12 | 12 | +0.04% | 50% | +0.32% | -0.16% |
-| FUND_FLIP | h+72 | 12 | +0.10% | 50% | +0.68% | -0.50% |
-| PREMIUM_COMPRESSION | h+1 | 194 | +0.00% | 54% | +0.05% | -0.04% |
-| PREMIUM_COMPRESSION | h+3 | 194 | +0.02% | 55% | +0.12% | -0.08% |
-| PREMIUM_COMPRESSION | h+12 | 194 | -0.01% | 47% | +0.22% | -0.23% |
-| PREMIUM_COMPRESSION | h+72 | 193 | +0.06% | 51% | +0.59% | -0.54% |
-| PREMIUM_SPIKE | h+1 | 244 | -0.01% | 48% | +0.05% | -0.06% |
-| PREMIUM_SPIKE | h+3 | 244 | -0.01% | 43% | +0.09% | -0.11% |
-| PREMIUM_SPIKE | h+12 | 244 | +0.04% | 54% | +0.23% | -0.22% |
-| PREMIUM_SPIKE | h+72 | 241 | +0.20% | 61% | +0.65% | -0.48% |
-| VOL_BREAKOUT | h+1 | 49 | -0.02% | 43% | +0.09% | -0.14% |
-| VOL_BREAKOUT | h+3 | 49 | +0.01% | 53% | +0.24% | -0.20% |
-| VOL_BREAKOUT | h+12 | 49 | +0.02% | 47% | +0.42% | -0.34% |
-| VOL_BREAKOUT | h+72 | 48 | +0.51% | 69% | +0.75% | -0.58% |
+| FUNDING_WINDOW_PRE | h+1 | 264 | -0.00% | 47% | +0.07% | -0.07% |
+| FUNDING_WINDOW_PRE | h+3 | 264 | -0.01% | 55% | +0.13% | -0.12% |
+| FUNDING_WINDOW_PRE | h+12 | 264 | +0.03% | 53% | +0.28% | -0.26% |
+| FUNDING_WINDOW_PRE | h+72 | 264 | +0.00% | 48% | +0.74% | -0.67% |
+| FUND_FLIP | h+1 | 46 | +0.01% | 54% | +0.12% | -0.08% |
+| FUND_FLIP | h+3 | 46 | +0.00% | 43% | +0.14% | -0.17% |
+| FUND_FLIP | h+12 | 46 | +0.07% | 54% | +0.32% | -0.29% |
+| FUND_FLIP | h+72 | 46 | -0.05% | 46% | +0.69% | -0.78% |
+| PREMIUM_COMPRESSION | h+1 | 563 | +0.00% | 53% | +0.08% | -0.07% |
+| PREMIUM_COMPRESSION | h+3 | 563 | +0.02% | 53% | +0.15% | -0.13% |
+| PREMIUM_COMPRESSION | h+12 | 563 | +0.02% | 48% | +0.29% | -0.30% |
+| PREMIUM_COMPRESSION | h+72 | 562 | +0.10% | 51% | +0.79% | -0.77% |
+| PREMIUM_SPIKE | h+1 | 735 | -0.00% | 51% | +0.07% | -0.08% |
+| PREMIUM_SPIKE | h+3 | 735 | +0.00% | 49% | +0.14% | -0.14% |
+| PREMIUM_SPIKE | h+12 | 735 | +0.04% | 50% | +0.28% | -0.30% |
+| PREMIUM_SPIKE | h+72 | 732 | +0.05% | 52% | +0.74% | -0.74% |
+| VOL_BREAKOUT | h+1 | 88 | -0.08% | 47% | +0.14% | -0.20% |
+| VOL_BREAKOUT | h+3 | 88 | -0.07% | 47% | +0.26% | -0.27% |
+| VOL_BREAKOUT | h+12 | 88 | +0.03% | 41% | +0.44% | -0.60% |
+| VOL_BREAKOUT | h+72 | 87 | +0.24% | 60% | +0.83% | -0.88% |
 
 ## 1h (binance, BTCUSDT)
 

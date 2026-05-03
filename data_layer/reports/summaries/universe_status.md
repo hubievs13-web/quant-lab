@@ -1,19 +1,19 @@
 # Universe Status
 
-Last refresh: 2026-05-03 13:12 UTC.
+Last refresh: 2026-05-03 13:39 UTC.
 
 ## Loaded series (binance, BTCUSDT)
 
 | timeframe | first bar | last bar | rows |
 |---|---|---|---|
-| 5m | 2026-04-03 00:00 UTC | 2026-05-02 23:55 UTC | 8640 |
+| 5m | 2026-02-02 00:00 UTC | 2026-05-02 23:55 UTC | 25920 |
 | 1h | 2025-11-04 00:00 UTC | 2026-05-02 23:00 UTC | 4320 |
 
 ## Phase 3 outputs (binance, BTCUSDT)
 
 | timeframe | features rows | regimes rows |
 |---|---|---|
-| 5m | 8640 | 8640 |
+| 5m | 25920 | 25920 |
 | 1h | 4320 | 4320 |
 
 ## Derivatives
@@ -25,7 +25,7 @@ Last refresh: 2026-05-03 13:12 UTC.
 
 | timeframe | events rows | outcomes rows | leaderboard rows |
 |---|---|---|---|
-| 5m | 597 | 2388 | 32 |
+| 5m | 1713 | 6852 | 32 |
 | 1h | 512 | 2560 | 35 |
 
 ## Pending phases

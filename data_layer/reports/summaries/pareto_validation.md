@@ -1,76 +1,79 @@
-# Pareto Validation (one-shot)
+# Pareto Validation (after 5m -> 90 days)
 
 Generated: 2026-05-03 UTC. Single pass; no tuning loops.
 
-Source data: Binance BTCUSDT, 5m=30 days (8640 bars), 1h=180 days (4320 bars).
-Methodology: re-detect events under each variant, rebuild outcomes, aggregate
-leaderboard. Compare cells with n>=30 only. Round-trip fee+slippage proxy = 0.18%.
+Source data: Binance BTCUSDT, 5m=90 days (25920 bars), 1h=180 days (4320 bars).
+Round-trip fee+slippage proxy = 0.18% (taker). All cells use closed-bar features
+and t+1 anchor (anti-lookahead).
 
 ## Decision
 
 **WATCHLIST ONLY.**
 
-Best candidate is `EV_VOL_BREAKOUT` 5m h+72 — but n=48 fails the n>=50 floor and
-1h-side is sign-flipped, breaking the stability rule.
+The previous WATCHLIST candidate `EV_VOL_BREAKOUT 5m h+72` did **not** strengthen
+with more data — it weakened. With n nearly doubled (48 -> 87), mean fwd halved
+(+0.51% -> +0.24%), hit rate fell (69% -> 60%), and MFE/|MAE| degraded (1.30 ->
+0.95, now unfavorable shape with median MAE bigger than median MFE).
 
-| event | tf | h | n | mean fwd | hit | MFE / \|MAE\| | sharpe | net after 0.18% |
+| metric | n=48 (30d) | n=87 (90d) | rule |
+|---|---|---|---|
+| count | 48 | 87 | n>=80 met |
+| mean fwd | +0.51% | +0.24% | net +0.06% after 0.18% fees |
+| hit > 0 | 69% | 60% | >55% (cusp) |
+| MFE / \|MAE\| | 1.30 | 0.95 | <1.0 unfavorable |
+
+Net edge after fees +0.06% on n=87 is well within 1 SE of zero (per-trade std
+~1.0%, SE of mean ~0.11%). The candidate is consistent with noise.
+
+## All n>=80 cells, 5m timeframe
+
+| event | h | n | mean fwd | hit | MFE | MAE | MFE/\|MAE\| | net after 0.18% |
 |---|---|---|---|---|---|---|---|---|
-| VOL_BREAKOUT | 5m | h+72 | 48 | +0.51% | 69% | 1.30 | 0.37 | +0.33% |
-| PREMIUM_SPIKE | 5m | h+72 | 241 | +0.20% | 61% | 1.36 | 0.19 | +0.02% |
-| PREMIUM_COMPRESSION | 1h | h+3 | 71 | +0.15% | 59% | 1.10 | 0.20 | -0.03% |
-| PREMIUM_SPIKE | 1h | h+3 | 131 | +0.16% | 58% | 1.50 | 0.16 | -0.02% |
-| FUND_FLIP | 1h | h+24 | 75 | +0.32% | 49% | 1.13 | 0.14 | +0.13% |
+| VOL_BREAKOUT | h+72 | 87 | +0.24% | 60% | +0.83% | -0.88% | 0.95 | +0.06% |
+| PREMIUM_SPIKE | h+12 | 735 | +0.04% | 50% | +0.28% | -0.30% | 0.94 | -0.14% |
+| PREMIUM_COMPRESSION | h+72 | 562 | +0.10% | 51% | +0.79% | -0.77% | 1.02 | -0.08% |
+| FUNDING_WINDOW_PRE | h+12 | 264 | +0.03% | 53% | +0.28% | -0.26% | 1.10 | -0.15% |
+| PREMIUM_COMPRESSION | h+3 | 563 | +0.02% | 53% | +0.15% | -0.13% | 1.14 | -0.16% |
+| FUNDING_WINDOW_PRE | h+3 | 264 | -0.01% | 55% | +0.13% | -0.12% | 1.06 | -0.19% |
 
-Notes per cell:
-- VOL_BREAKOUT 5m h+72: n=48 (just under 50), 1h-side h+3 is -0.54% (n=34) →
-  inconsistent across timeframes; cannot promote.
-- PREMIUM_SPIKE 5m h+72: n=241 (large), but net edge collapses to ~0% after
-  fees; mean is too small for a 6-hour holding period.
-- PREMIUM_COMPRESSION 1h h+3 / PREMIUM_SPIKE 1h h+3: positive raw mean, but net
-  edge after fees is negative.
-- FUND_FLIP 1h h+24: hit rate 49% < 55% → fails decision rule.
-
-## Sensitivity check (one pass)
-
-| variant | top cell | n | mean fwd | hit | sharpe |
-|---|---|---|---|---|---|
-| baseline | VOL_BREAKOUT 5m h+72 | 48 | +0.51% | 69% | 0.37 |
-| strict_premium (z >= 3) | (no premium cell with n>=30) | - | - | - | - |
-| strict_vol_breakout (pctile=99.5) | VOL_BREAKOUT 5m h+72 | 28 | +0.61% | 68% | 0.42 |
-
-- `strict_premium` drops every PREMIUM cell below n=30 (5m PREMIUM_SPIKE 244→29,
-  1h 131→18). Reduces tradable sample without lifting sharpe meaningfully.
-- `strict_vol_breakout` lifts the 5m h+72 mean a bit (+0.51 → +0.61%) but every
-  cell drops below n=30. The cleaner signal does not justify losing sample.
-- **No threshold change is justified.** `events.yaml` left as-is.
+No 5m cell with n>=80 produces a net-positive edge that comfortably exceeds the
+0.18% friction proxy. The closest is VOL_BREAKOUT h+72 at +0.06% — within noise.
 
 ## Why no RESEARCH CANDIDATE yet
 
-1. The only cell with high enough hit rate and MFE-favourable shape
-   (`VOL_BREAKOUT 5m h+72`) has n=48, missing the n>=50 hurdle.
-2. That cell does not generalise: 1h h+3 is -0.54% mean (n=34), 1h h+1 is
-   -0.25% (n=34). Net direction is timeframe-dependent.
-3. Premium events have plenty of samples but raw mean fwd is in the same
-   order-of-magnitude as the assumed 0.18% friction, so net edge is
-   indistinguishable from zero after costs.
-4. Stricter thresholds shrink sample size faster than they raise sharpe.
+1. **Sample size resolved a small-sample illusion.** The previous +0.51% mean on
+   n=48 collapsed to +0.24% on n=87. The original signal was likely an artifact
+   of the April-2026 regime; the Feb–Mar window has different vol-breakout
+   dynamics.
+2. **MFE/|MAE| flipped unfavorable** (1.30 -> 0.95). With median MAE > median
+   MFE, even a working entry has below-even drawdown vs reward profile.
+3. **Net edge after fees is statistically indistinguishable from zero.**
+4. Premium events (large n) still hover near or below the friction line.
 
-## Watchlist (track, do not trade)
+## Why not "NO CANDIDATE"
 
-- `EV_VOL_BREAKOUT` 5m h+72: revisit once 5m history reaches >=60d (sample
-  should comfortably clear n>=50 with similar hit rate).
-- `EV_PREMIUM_SPIKE` 1h h+3: revisit on cross-exchange (Bybit / OKX); if the
-  same sign appears with comparable hit rate, the after-fees edge becomes
-  more credible via portfolio averaging.
-- `EV_FUND_FLIP` 1h h+24: revisit once 1h history reaches >=365d (n grows
-  linearly with window).
+Some weak-but-positive signal remains in:
+- VOL_BREAKOUT 5m h+72 (+0.06% net, n=87) — keep on watchlist; revisit if
+  history extends to ~180d for 5m.
+- 1h-side direction effects: VOL_BREAKOUT 1h h+1 / h+3 are persistently
+  *negative* (-0.25%, -0.54%); flagging this as a possible short-side cue
+  is more honest than calling vol-breakout "long-only".
 
 ## Recommended next action
 
-Extend Binance 5m history to ~60-90 days (cheap, same CDN source) **before**
-spending the cost of Phase 5 cross-exchange ingest. If `EV_VOL_BREAKOUT` 5m h+72
-holds n>=80 with hit>=60% and net after fees still > +0.20%, it earns
-RESEARCH CANDIDATE status. Otherwise, re-evaluate.
+Stop pursuing VOL_BREAKOUT 5m h+72 as a long-only candidate; it is more likely
+noise than edge after this expansion. Two cleaner next steps:
 
-Hard caveats: this is a descriptive scan, not a verdict. No hypothesis is
-created. No strategy code is touched.
+1. **Cross-exchange validation (Phase 5)**: ingest Bybit + OKX BTCUSDT 5m/1h
+   and check whether `EV_PREMIUM_SPIKE` and `EV_PREMIUM_COMPRESSION` fire at
+   similar timestamps with similar forward returns. If yes, the after-fees gap
+   may close via signal averaging across exchanges.
+2. **Direction split for VOL_BREAKOUT**: separate fires by sign of `ret_3` (or
+   `slope_ret_24`) at the entry bar; the 1h-side negative cells suggest the
+   event-level mean hides two sub-populations.
+
+## Constraints honored
+
+- One file modified (this report). No bulk data committed; `data_layer/store/`
+  stays gitignored. No hypothesis generated. No strategy code touched. No
+  Bybit/OKX ingest; no ETHUSDT.
