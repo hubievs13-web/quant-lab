@@ -1,0 +1,66 @@
+# Public REST / WS endpoints per exchange. No private API keys in v1.
+# See DATA_LAYER_IMPLEMENTATION_PLAN.md Section 3.
+
+binance:
+  base_url_fapi: https://fapi.binance.com
+  endpoints:
+    klines: /fapi/v1/klines
+    funding_rate: /fapi/v1/fundingRate
+    funding_info: /fapi/v1/fundingInfo
+    premium_index: /fapi/v1/premiumIndex
+    open_interest_hist: /futures/data/openInterestHist
+    taker_long_short_ratio: /futures/data/takerlongshortRatio
+    global_long_short_account_ratio: /futures/data/globalLongShortAccountRatio
+    top_long_short_account_ratio: /futures/data/topLongShortAccountRatio
+    top_long_short_position_ratio: /futures/data/topLongShortPositionRatio
+  ws_force_order: wss://fstream.binance.com/ws
+  rate_limit:
+    weight_per_minute: 2400
+    request_burst: 20
+  retry:
+    max_attempts: 5
+    backoff_initial_s: 0.5
+    backoff_factor: 2.0
+    backoff_jitter_s: 0.5
+  docs: https://binance-docs.github.io/apidocs/futures/en/
+
+bybit:
+  base_url: https://api.bybit.com
+  category: linear
+  endpoints:
+    kline: /v5/market/kline
+    funding_history: /v5/market/funding/history
+    open_interest: /v5/market/open-interest
+    mark_price_kline: /v5/market/mark-price-kline
+    index_price_kline: /v5/market/index-price-kline
+    account_ratio: /v5/market/account-ratio
+  ws_liquidation: wss://stream.bybit.com/v5/public/linear
+  rate_limit:
+    request_per_second: 10
+  retry:
+    max_attempts: 5
+    backoff_initial_s: 0.5
+    backoff_factor: 2.0
+    backoff_jitter_s: 0.5
+  docs: https://bybit-exchange.github.io/docs/v5/intro
+
+okx:
+  base_url: https://www.okx.com
+  inst_type: SWAP
+  endpoints:
+    candles: /api/v5/market/candles
+    funding_rate_history: /api/v5/public/funding-rate-history
+    open_interest: /api/v5/public/open-interest
+    mark_price_candles: /api/v5/market/mark-price-candles
+    index_candles: /api/v5/market/index-candles
+    long_short_account_ratio: /api/v5/rubik/stat/contracts/long-short-account-ratio
+    taker_volume_contract: /api/v5/rubik/stat/taker-volume-contract
+  ws_liquidation: wss://ws.okx.com:8443/ws/v5/public
+  rate_limit:
+    request_per_second: 10
+  retry:
+    max_attempts: 5
+    backoff_initial_s: 0.5
+    backoff_factor: 2.0
+    backoff_jitter_s: 0.5
+  docs: https://www.okx.com/docs-v5/en/

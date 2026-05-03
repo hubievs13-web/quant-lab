@@ -1,0 +1,47 @@
+# Event detection thresholds. See DATA_LAYER_IMPLEMENTATION_PLAN.md
+# Section 6. Event strength is recorded in absolute z-score units so
+# events of the same type are comparable across regimes.
+
+EV_FUND_FLIP: {}
+
+EV_FUND_EXTREME:
+  zscore_abs_threshold: 2.0
+
+EV_PREMIUM_SPIKE:
+  basis_zscore_24_threshold: 3.0
+
+EV_PREMIUM_COMPRESSION:
+  basis_zscore_24_threshold: -3.0
+  require_prior_premium: true
+
+EV_OI_SPIKE_UP:
+  oi_pct_change_1h_min: 0.03
+  oi_zscore_30d_min: 1.0
+
+EV_OI_FLUSH:
+  oi_pct_change_1h_max: -0.03
+
+EV_LIQ_LONG_CASCADE:
+  liq_long_zscore_24_min: 3.0
+
+EV_LIQ_SHORT_CASCADE:
+  liq_short_zscore_24_min: 3.0
+
+EV_VOL_BREAKOUT:
+  range_pct_pctile_30d: 99.0
+  taker_quote_zscore_24_min: 2.0
+
+EV_CROWD_FLIP:
+  lsr_account_z_30d_high: 1.5
+  lsr_account_z_30d_low: -1.5
+  flip_window_bars: 24
+
+EV_FUNDING_WINDOW_PRE:
+  pre_settle_minutes: 30
+
+# Report / brief size policy. Applies to Phase 6+ outputs.
+# All Codex-readable markdown reports must obey these caps.
+report_caps:
+  markdown_max_kb: 5
+  hypothesis_seed_brief_max_lines: 80
+  hypothesis_seed_brief_max_kb: 5

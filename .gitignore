@@ -41,3 +41,8 @@ credentials.*
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Market Research Data Layer (bulk data; do-not-read-by-default)
+data_layer/store/
+data_layer/.cache/
+*.parquet.checksum
