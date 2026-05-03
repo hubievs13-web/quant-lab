@@ -58,9 +58,9 @@ def _run_quality_smoke() -> int:
         repo_root=repo_root,
         store_root=store_root,
         symbols=["BTCUSDT"],
-        series=[("5m", 7), ("1h", 30)],
-        funding_window_days=30,
-        oi_window_days=7,
+        series=[("5m", 30), ("1h", 180)],
+        funding_window_days=180,
+        oi_window_days=30,
     )
     print(f"[quality] wrote data_layer/reports/quality/latest_summary.md")
     print(f"[quality] series:")

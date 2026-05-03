@@ -72,9 +72,12 @@ FEATURE_SPECS: tuple[FeatureSpec, ...] = (
                 "null until min_periods=7d met",
                 ("funding_rate_ffill",), "30 days"),
     FeatureSpec("basis_bp",
-                "(mark-index)/index*1e4; insufficient_data in Phase 2/3 "
-                "(no mark/index series ingested yet)",
-                ("mark", "index"), "1 bar"),
+                "(mark_close - index_close)/index_close*1e4 on the closed bar; "
+                "null when mark/index missing for the bar",
+                ("mark_close", "index_close"), "1 bar"),
+    FeatureSpec("basis_zscore_24",
+                "z-score of basis_bp vs rolling 24-bar mean+std",
+                ("basis_bp",), "24 bars"),
     FeatureSpec("oi_pct_change_1h", "OI pct change over 1 hour",
                 ("oi_base",), "1 hour"),
     FeatureSpec("oi_pct_change_24h", "OI pct change over 24 hours",
@@ -246,8 +249,17 @@ def build_features_for(
     ostd = df["oi_base"].rolling(o_window, min_periods=o_min).std()
     df["oi_zscore_30d"] = (df["oi_base"] - omean) / ostd.replace(0.0, np.nan)
 
-    # basis: not available in Phase 2/3 (no mark/index ingest yet)
-    df["basis_bp"] = np.nan
+    # basis_bp from mark/index (null where either side missing)
+    if "mark_close" in df.columns and "index_close" in df.columns:
+        ix = df["index_close"].astype("float64").replace(0.0, np.nan)
+        mk = df["mark_close"].astype("float64")
+        df["basis_bp"] = (mk - ix) / ix * 1e4
+    else:
+        df["basis_bp"] = np.nan
+
+    bmean = df["basis_bp"].rolling(zscore_window, min_periods=zscore_window).mean()
+    bstd = df["basis_bp"].rolling(zscore_window, min_periods=zscore_window).std()
+    df["basis_zscore_24"] = (df["basis_bp"] - bmean) / bstd.replace(0.0, np.nan)
 
     # funding window flags
     mtn = df["funding_minutes_to_next"]
@@ -276,7 +288,7 @@ def build_features_for(
         "funding_rate_ffill", "funding_rate_zscore_30d",
         "funding_minutes_to_next",
         "pre_funding_30m", "post_funding_30m", "funding_settle_bar",
-        "basis_bp",
+        "basis_bp", "basis_zscore_24",
         "oi_base", "oi_pct_change_1h", "oi_pct_change_24h", "oi_zscore_30d",
         "long_short_account_ratio", "top_trader_position_ratio",
         "taker_long_short_vol_ratio",

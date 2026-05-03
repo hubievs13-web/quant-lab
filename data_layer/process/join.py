@@ -1,8 +1,10 @@
-"""Left-join derivatives onto the OHLCV bar grid (Phase 2 minimal).
+"""Left-join derivatives onto the OHLCV bar grid.
 
 Joins funding (forward-filled within `funding_interval_ms`) and OI
 (forward-filled with TTL of 60 minutes) onto the canonical bars.
-Mark / index / premium / liquidations are deferred to later phases.
+Mark and index price klines are joined exactly on `ts_open_ms` when
+available; from those we derive `basis_bp = (mark - index)/index*1e4`.
+Liquidations and book snapshots remain deferred.
 """
 from __future__ import annotations
 
@@ -71,6 +73,24 @@ def join_for(symbol: str, timeframe: str, store_root: Path) -> tuple[Path | None
     else:
         bars["oi_base"] = pd.NA
         bars["oi_value_quote"] = pd.NA
+
+    mark = _read_parquet_dir(store_root / "raw/binance/mark" / symbol / timeframe)
+    if not mark.empty:
+        mk = mark[["ts_open_ms", "mark_close"]].drop_duplicates(
+            subset=["ts_open_ms"], keep="first"
+        )
+        bars = bars.merge(mk, on="ts_open_ms", how="left")
+    else:
+        bars["mark_close"] = pd.NA
+
+    index = _read_parquet_dir(store_root / "raw/binance/index" / symbol / timeframe)
+    if not index.empty:
+        ix = index[["ts_open_ms", "index_close"]].drop_duplicates(
+            subset=["ts_open_ms"], keep="first"
+        )
+        bars = bars.merge(ix, on="ts_open_ms", how="left")
+    else:
+        bars["index_close"] = pd.NA
 
     out_path = (
         store_root / "processed/bars_joined/binance" / symbol / f"{timeframe}.parquet"

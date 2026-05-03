@@ -165,6 +165,14 @@ def run_quality_smoke(
         oi_q = _oi_quality(oi)
         out[symbol]["oi"] = oi_q
 
+        for kind, col in (("mark", "mark_close"), ("index", "index_close")):
+            tf_rows: dict[str, int] = {}
+            for tf, _n_days in series:
+                d = store_root / f"raw/binance/{kind}" / symbol / tf
+                df = _read_concat(d)
+                tf_rows[tf] = int(len(df))
+            out[symbol].setdefault("mark_index", {})[kind] = tf_rows
+
     md_lines.append("")
     md_lines.append("## Funding")
     md_lines.append("")
@@ -177,6 +185,20 @@ def run_quality_smoke(
             f"{f['funding_rows_expected_in_window']} | {f['first_settle_ms']} | "
             f"{f['last_settle_ms']} |"
         )
+
+    md_lines.append("")
+    md_lines.append("## Mark / Index price klines")
+    md_lines.append("")
+    md_lines.append("| symbol | series | mark rows | index rows |")
+    md_lines.append("|---|---|---|---|")
+    for symbol in symbols:
+        mi = out[symbol].get("mark_index", {})
+        mark_rows = mi.get("mark", {})
+        index_rows = mi.get("index", {})
+        for tf, _n_days in series:
+            md_lines.append(
+                f"| {symbol} | {tf} | {mark_rows.get(tf, 0)} | {index_rows.get(tf, 0)} |"
+            )
 
     md_lines.append("")
     md_lines.append("## Open Interest (5-minute granularity)")
