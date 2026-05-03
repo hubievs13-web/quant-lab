@@ -3,26 +3,37 @@
 File-based Market Research Data Layer for crypto futures research.
 
 Plan: `data_layer/DATA_LAYER_IMPLEMENTATION_PLAN.md` (Sections 1-14).
-Current phase: **Phase 1 (scaffold only)**. Phases 2-7 are gated by
-user approval per plan Section 14.
+Current phase: **Phase 2 (Binance smoke ingest)**. Phases 3-7 are
+still gated by user approval per plan Section 14.
+
+Phase 2 source: `data.binance.vision` public CDN (no API key).
+Live Binance fapi REST is geoblocked from many cloud regions; the
+documented public archive is the v1 fallback used by all Phase 2
+fetchers.
 
 ## What is in this folder
 
 - `config/` - symbols, sources, features, regime/event thresholds.
-- `ingest/` - per-exchange ingest modules (Phase 2+; stubs only).
+- `ingest/` - per-exchange ingest modules. Binance OHLCV / funding /
+  open-interest implemented in Phase 2; Bybit and OKX are stubs.
 - `process/` - feature / regime / event / outcome / leaderboard /
-  quality engines (Phase 2+; stubs only).
-- `scripts/` - `cli.py` plus stub fetch / rebuild / refresh
-  scripts. All Phase 1 stubs print "not implemented".
+  quality engines. `align`, `join`, `quality` implemented in Phase 2;
+  the rest are stubs until Phases 3-4.
+- `scripts/` - `cli.py` plus fetch / rebuild / refresh scripts.
+  Phase 2 wires `fetch-binance-smoke`, `rebuild-smoke`,
+  `quality-smoke`, `refresh-summaries`.
 - `reports/` - Codex-readable markdown only. <= 5 KB per file.
 - `store/` - bulk Parquet (gitignored, do-not-read-by-default).
 
 ## CLI
 
     python -m data_layer.scripts.cli --help
+    python -m data_layer.scripts.cli fetch-binance-smoke
+    python -m data_layer.scripts.cli rebuild-smoke
+    python -m data_layer.scripts.cli quality-smoke
+    python -m data_layer.scripts.cli refresh-summaries
 
-All subcommands print "not implemented" until their phase is
-approved.
+Future-phase subcommands still print "not implemented".
 
 ## Codex / Devin read order
 
@@ -48,11 +59,18 @@ Forbidden by default:
 - Hypothesis seed briefs (Phase 6): max 80 lines AND max 5 KB.
 - Caps live in `data_layer/config/events.yaml -> report_caps`.
 
+## Runtime dependencies (Phase 2)
+
+- `pandas`, `pyarrow` (Parquet I/O, joins, dedup, asof merges).
+  Install: `pip install pandas pyarrow`.
+- HTTP via `urllib` (stdlib); no `requests` dependency.
+
 ## Out of scope without separate approval
 
 - `.codex/`, `MASTER_CONTEXT.md`, `PROJECT_INSTRUCTIONS.md`,
   top-level `README.md`, `experiments_log.md`,
   `results/experiments.csv`, `obsidian/01_Rules/` through
   `obsidian/10_Codex_Instructions/`.
-- Any new Python dependency.
-- Any network call (none until Phase 2).
+- New Python dependencies beyond `pandas` / `pyarrow`.
+- Bybit / OKX ingest (Phase 5).
+- Features / regimes / events (Phases 3-4).
