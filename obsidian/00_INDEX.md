@@ -30,6 +30,10 @@ preserved verbatim below the separator.
   `obsidian/10_Codex_Instructions/engineer_prompt.md`.
 - Auditor mode -> `.codex/roles/auditor.md` +
   `obsidian/10_Codex_Instructions/auditor_prompt.md`.
+- Hypothesis factory mode (one hypothesis per session) ->
+  `obsidian/10_Codex_Instructions/hypothesis_factory_prompt.md`.
+- Pre-backtest auditor mode (REJECT / REWORK / ALLOW_ENGINEERING)
+  -> `obsidian/10_Codex_Instructions/pre_backtest_auditor_prompt.md`.
 
 ## Quick paths by artifact
 
@@ -53,6 +57,10 @@ preserved verbatim below the separator.
 - Topic indexes -> `obsidian/wiki/index/<topic>.md`.
 - Per-source summaries -> `obsidian/wiki/summaries/`.
 - Per-hypothesis decisions -> `obsidian/wiki/decisions/Hxxxx.md`.
+- Decisions index (rejected + active) ->
+  `obsidian/wiki/decisions/decisions_index.md`.
+- Rejected pattern blocklist (mechanism families) ->
+  `obsidian/wiki/decisions/rejected_pattern_blocklist.md`.
 - QC / Lean errors -> `obsidian/wiki/qc_lean/errors/`.
 - QC / Lean patterns -> `obsidian/wiki/qc_lean/patterns/`.
 - Lint snapshot history -> `obsidian/wiki/lint_history/`.
