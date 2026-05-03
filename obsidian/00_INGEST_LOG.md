@@ -28,4 +28,9 @@ Status values:
 
 ## Entries
 
-(no entries yet)
+```
+2026-05-02 | obsidian/04_Backtests/BT0001_H0002_2026-04-29/report.md | obsidian/wiki/summaries/BT0001_H0002_2026-04-29.md | summarized | wiki migration final batch
+2026-05-02 | obsidian/04_Backtests/Smooth Blue Jellyfish_H0005_2026-04-29/report.md | obsidian/wiki/summaries/H0005_smooth_blue_jellyfish_2026-04-29.md | summarized | wiki migration final batch
+2026-05-02 | obsidian/05_Rejected/ + experiments_log.md + obsidian/02_Hypotheses/H0008_*.md | obsidian/wiki/decisions/decisions_index.md | summarized | consolidated decision index (rejected + active)
+2026-05-02 | PLAN_LLM_WIKI_MIGRATION.md | obsidian/wiki/index/step_8_verification.md | summarized | migration completion + token-cost verification
+```
