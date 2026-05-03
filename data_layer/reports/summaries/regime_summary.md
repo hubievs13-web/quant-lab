@@ -1,6 +1,6 @@
 # Regime Summary
 
-Last refresh: 2026-05-03 17:51 UTC.
+Last refresh: 2026-05-03 20:05 UTC.
 Source: `data_layer/store/processed/regimes/binance/<SYMBOL>/<TF>.parquet`.
 
 | symbol | tf | last bar | composite | confidence |

@@ -1,6 +1,6 @@
 # Feature Catalog
 
-Last refresh: 2026-05-03 17:51 UTC.
+Last refresh: 2026-05-03 20:05 UTC.
 Source: `data_layer/store/processed/features/binance/<SYMBOL>/<TF>.parquet`.
 
 Definitions below are shared by BTCUSDT and ETHUSDT on Binance.

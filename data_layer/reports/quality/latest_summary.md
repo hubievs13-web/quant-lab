@@ -1,14 +1,14 @@
 # Data Layer Quality Report (latest)
 
-Generated: 2026-05-03 17:50 UTC
+Generated: 2026-05-03 20:05 UTC
 Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 ## OHLCV (per series)
 
 | symbol | tf | days | expected | received | dedup | missing | duplicates | out-of-order | status |
 |---|---|---|---|---|---|---|---|---|---|
-| BTCUSDT | 5m | 90 | 25920 | 0 | 0 | 25920 | 0 | 0 | red |
-| BTCUSDT | 1h | 180 | 4320 | 0 | 0 | 4320 | 0 | 0 | red |
+| BTCUSDT | 5m | 90 | 25920 | 25920 | 25920 | 0 | 0 | 0 | green |
+| BTCUSDT | 1h | 180 | 4320 | 4320 | 4320 | 0 | 0 | 0 | green |
 | ETHUSDT | 5m | 90 | 25920 | 25920 | 25920 | 0 | 0 | 0 | green |
 | ETHUSDT | 1h | 180 | 4320 | 4320 | 4320 | 0 | 0 | 0 | green |
 
@@ -23,7 +23,7 @@ Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 | symbol | series | mark rows | index rows |
 |---|---|---|---|
-| BTCUSDT | 5m | 0 | 0 |
+| BTCUSDT | 5m | 25920 | 2016 |
 | BTCUSDT | 1h | 0 | 0 |
 | ETHUSDT | 5m | 25920 | 25920 |
 | ETHUSDT | 1h | 4320 | 4320 |

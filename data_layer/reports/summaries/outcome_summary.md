@@ -1,6 +1,6 @@
 # Outcome Summary
 
-Last refresh: 2026-05-03 17:51 UTC.
+Last refresh: 2026-05-03 20:05 UTC.
 Rows shown only when `n >= 80` to keep the report compact and aligned with Pareto checks.
 
 | symbol | tf | event | h | n | fwd | net | hit | MFE/|MAE| |
