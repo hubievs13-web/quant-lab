@@ -126,24 +126,32 @@ not read these without explicit user approval.
   in the two existing `logs.txt` files (~103 KB each) — only if
   worth indexing; defer until a recurring pattern shows up.
 
-## 8. Next recommended cleanup actions (each gated by user)
+## 8. Cleanup actions
 
-In rough priority order. None are auto-applied; each is a
-separate small PR.
+### Resolved
 
 1. Bump frontmatter `status:` for H0002, H0005, H0007 from
-   `draft` to `rejected` (3 file edits, frontmatter-only).
-2. Confirm and update H0008 frontmatter `status:` (1 file edit).
-3. Decide on the `BT0001_H0002` duplicate JSON / logs files:
-   keep both, or remove the QC-export-named copies and keep only
-   `statistics.json` and `logs.txt`. Note: `Files are never
-   deleted` (`README.md` l.140) — moving to a sub-folder may be
-   the right action.
-4. Decide on renaming `Smooth Blue Jellyfish_H0005_2026-04-29/`
-   to a canonical `BTxxxx_H0005_2026-04-29/` folder for naming
-   consistency (case-aware Git rename if needed).
-5. Investigate the missing H0007 backtest folder. If exports
-   exist, restore them; if not, add a note in
-   `obsidian/04_Backtests/` documenting the gap.
-6. Generate the wiki summary notes listed in Section 7 (Step 8
-   or later; not automatic).
+   `draft` to `rejected` — DONE in PR #7.
+2. Confirm and update H0008 frontmatter `status:` — DONE in
+   PR #8 (`draft` -> `awaiting_audit`).
+5. Investigate the missing H0007 backtest folder — DONE; per
+   Cleanup E (PR #9) the folder was never generated, see
+   "Explained gaps" sub-section above.
+6. Generate wiki summary notes — DONE in the migration-completion
+   batch PR: `obsidian/wiki/summaries/BT0001_H0002_2026-04-29.md`,
+   `obsidian/wiki/summaries/H0005_smooth_blue_jellyfish_2026-04-29.md`,
+   `obsidian/wiki/decisions/decisions_index.md`,
+   `obsidian/wiki/index/step_8_verification.md`.
+
+### Deferred known issues
+
+3. Duplicate JSON / log file pairs in
+   `obsidian/04_Backtests/BT0001_H0002_2026-04-29/`
+   (`Swimming Black Panda.json` byte-identical to `statistics.json`;
+   `Swimming Black Panda_logs.txt` byte-identical to `logs.txt`).
+   Decision deferred — `README.md` l.140 prohibits deletion;
+   moving QC-export-named copies to a sub-folder is the safer
+   option but requires user approval. Tracked here, not auto-applied.
+4. Folder `Smooth Blue Jellyfish_H0005_2026-04-29/` uses raw QC
+   export name instead of canonical `BTxxxx_H0005_2026-04-29/`.
+   Case-aware Git rename deferred. Tracked here, not auto-applied.
