@@ -262,7 +262,11 @@ def build_features_for(
     df["basis_zscore_24"] = (df["basis_bp"] - bmean) / bstd.replace(0.0, np.nan)
 
     # funding window flags
-    mtn = df["funding_minutes_to_next"]
+    if "funding_minutes_to_next" in df.columns:
+        mtn = pd.to_numeric(df["funding_minutes_to_next"], errors="coerce")
+    else:
+        mtn = pd.Series(np.nan, index=df.index, dtype="float64")
+    df["funding_minutes_to_next"] = mtn
     valid = mtn.notna() & (mtn >= -1) & (mtn <= FUNDING_INTERVAL_MIN + 1)
     pre = ((mtn > 0) & (mtn <= 30) & valid).astype("Int8")
     post = (
