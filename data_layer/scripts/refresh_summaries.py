@@ -181,12 +181,12 @@ def refresh_feature_catalog() -> int:
     lines.append("## Insufficient_data notes")
     lines.append("")
     lines.append(
-        "- `funding_rate_zscore_30d`, `oi_zscore_30d`: require >= 7 days of "
-        "history; smoke 5m window is 7 days (still sparse), so 5m yields 0 valid."
+        "- `funding_rate_zscore_30d`, `oi_zscore_30d`: need >= 7 days of "
+        "history before producing values; null on the warm-up tail of each window."
     )
     lines.append(
-        "- `basis_bp`: mark/index series not ingested in Phase 2/3; populated in "
-        "Phase 4+."
+        "- `basis_bp` is computed from mark + index price klines fetched from "
+        "data.binance.vision (futures/um daily archives)."
     )
     lines.append(
         "- crowding cols come from raw OI metrics with 60-min TTL (asof backward)."
@@ -295,16 +295,16 @@ def refresh_regime_summary() -> int:
     lines.append("## Notes")
     lines.append("")
     lines.append(
-        "- `basis_regime` is `insufficient_data` everywhere in Phase 2/3 (no "
-        "mark/index series ingested yet)."
+        "- `basis_regime` now uses real mark/index ingest from "
+        "data.binance.vision; `discount_rich` flags index > mark by enough bp."
     )
     lines.append(
         "- `crowding_regime` is `balanced` whenever `top_trader_position_ratio` "
-        "is present; richer crowded_long / crowded_short labels are Phase 4."
+        "is present; richer crowded_long / crowded_short labels still pending."
     )
     lines.append(
-        "- 5m `funding_regime` insufficient bars (~last 2 days) reflect missing "
-        "May-2026 monthly funding zip; arrives once month rolls."
+        "- Residual `insufficient_data` in `funding_regime` reflects the tail "
+        "of the window where the next monthly funding zip is not yet on the CDN."
     )
 
     out = REPORTS / "summaries" / "regime_summary.md"
@@ -322,6 +322,8 @@ IMPLEMENTED_DESC = {
     "EV_OI_FLUSH": "oi_pct_change_1h < -3%",
     "EV_VOL_BREAKOUT": "range_pct >= rolling 99-pctile AND taker_quote_zscore_24 > 2",
     "EV_FUNDING_WINDOW_PRE": "informational; minutes_to_next_settle <= 30 (first cross)",
+    "EV_PREMIUM_SPIKE": "basis_zscore_24 >= +2 (mark - index spread spikes positive)",
+    "EV_PREMIUM_COMPRESSION": "basis_zscore_24 <= -2 (mark - index spread spikes negative)",
 }
 
 
@@ -429,8 +431,8 @@ def refresh_outcome_summary() -> int:
         "Anchor: bar AFTER event (next-bar entry; no same-bar contamination)."
     )
     lines.append(
-        "Counts are complete only; `inc` column lists rows where the horizon "
-        "window was truncated by end-of-data."
+        "Counts are complete only. Rows with n < 10 omitted to keep the "
+        "report compact; full table is in the leaderboard parquet."
     )
     lines.append("")
 
@@ -444,21 +446,21 @@ def refresh_outcome_summary() -> int:
         lines.append(f"## {tf} (binance, BTCUSDT)")
         lines.append("")
         lines.append(
-            "| event_type | h | n | inc | mean fwd | hit>0 | med MFE | med MAE |"
+            "| event | h | n | fwd | hit | MFE | MAE |"
         )
-        lines.append("|---|---|---|---|---|---|---|---|")
+        lines.append("|---|---|---|---|---|---|---|")
         df = df.copy()
         df["_h"] = df["horizon"].str.replace("h+", "", regex=False).astype(int)
-        df = df.sort_values(["event_type", "_h"])
+        df = df[df["count"] >= 10].sort_values(["event_type", "_h"])
         for _, r in df.iterrows():
             n = int(r["count"])
-            inc = int(r["count_incomplete"])
             hit = (
                 f"{r['hit_rate_at_zero'] * 100:.0f}%"
                 if pd.notna(r["hit_rate_at_zero"]) else "-"
             )
+            ev = str(r["event_type"]).replace("EV_", "")
             lines.append(
-                f"| {r['event_type']} | {r['horizon']} | {n} | {inc} | "
+                f"| {ev} | {r['horizon']} | {n} | "
                 f"{_fmt_pct(r['mean_forward_return'])} | {hit} | "
                 f"{_fmt_pct(r['median_mfe'])} | {_fmt_pct(r['median_mae'])} |"
             )
@@ -484,7 +486,7 @@ def refresh_outcome_summary() -> int:
 
 # ---------- leaderboards/latest_event_leaderboard.md (Phase 4) -------
 
-MIN_COUNT_FOR_RANKING = 3
+MIN_COUNT_FOR_RANKING = 30
 TOP_K = 12
 
 
@@ -546,7 +548,8 @@ def refresh_event_leaderboard() -> int:
     lines.append("## Caveats")
     lines.append("")
     lines.append(
-        "- Smoke window is 7d (5m) / 30d (1h). Sample sizes are intentionally tiny."
+        "- History window: 30d (5m) / 180d (1h); cells with n<30 are excluded "
+        "from this ranking but still present in the leaderboard parquet."
     )
     lines.append(
         "- This is a descriptive scan, NOT a verdict. No hypothesis is generated."

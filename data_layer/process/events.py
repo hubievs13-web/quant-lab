@@ -9,12 +9,12 @@ the **first cross** only (condition true at bar i, false at bar i-1)
 to avoid consecutive-bar cascades. Anti-lookahead is enforced because
 all inputs are features at bar i (functions of bars <= i).
 
-Implemented event types (Phase 4 user spec):
+Implemented event types:
 - EV_FUND_FLIP, EV_FUND_EXTREME, EV_OI_SPIKE_UP, EV_OI_FLUSH,
-  EV_VOL_BREAKOUT, EV_FUNDING_WINDOW_PRE.
+  EV_VOL_BREAKOUT, EV_FUNDING_WINDOW_PRE,
+- EV_PREMIUM_SPIKE, EV_PREMIUM_COMPRESSION (basis_zscore_24).
 
 Skipped (insufficient source data; documented in the catalog):
-- EV_PREMIUM_SPIKE, EV_PREMIUM_COMPRESSION (no mark/index ingest).
 - EV_LIQ_LONG_CASCADE, EV_LIQ_SHORT_CASCADE (no liquidations ingest).
 - EV_CROWD_FLIP (LSR z-score requires >= 30 days of OI metrics).
 """
@@ -56,16 +56,20 @@ THRESH = {
     "EV_FUNDING_WINDOW_PRE": {
         "pre_settle_minutes": 30,
     },
+    "EV_PREMIUM_SPIKE": {
+        "basis_zscore_24_min": 2.0,
+    },
+    "EV_PREMIUM_COMPRESSION": {
+        "basis_zscore_24_max": -2.0,
+    },
 }
 
 IMPLEMENTED_EVENT_TYPES: tuple[str, ...] = tuple(THRESH.keys())
 
 SKIPPED_EVENT_TYPES: dict[str, str] = {
-    "EV_PREMIUM_SPIKE": "no mark/index ingest in Phase 2/3",
-    "EV_PREMIUM_COMPRESSION": "no mark/index ingest in Phase 2/3",
-    "EV_LIQ_LONG_CASCADE": "no liquidations ingest in Phase 2/3",
-    "EV_LIQ_SHORT_CASCADE": "no liquidations ingest in Phase 2/3",
-    "EV_CROWD_FLIP": "LSR z-score requires >= 30d of OI metrics; smoke has 7d",
+    "EV_LIQ_LONG_CASCADE": "no liquidations ingest in v1",
+    "EV_LIQ_SHORT_CASCADE": "no liquidations ingest in v1",
+    "EV_CROWD_FLIP": "LSR z-score requires >= 30 days of OI metrics history",
 }
 
 
@@ -204,6 +208,44 @@ def _detect_vol_breakout(df: pd.DataFrame, tf: str) -> pd.DataFrame:
     })
 
 
+def _detect_premium_spike(df: pd.DataFrame) -> pd.DataFrame:
+    if "basis_zscore_24" not in df.columns:
+        return pd.DataFrame()
+    z = df["basis_zscore_24"]
+    z_min = THRESH["EV_PREMIUM_SPIKE"]["basis_zscore_24_min"]
+    cond = z >= z_min
+    fires = _first_cross(cond)
+    idx = df.index[fires]
+    if len(idx) == 0:
+        return pd.DataFrame()
+    strength = z.loc[idx].astype(float).values
+    return pd.DataFrame({
+        "row_idx": idx,
+        "ts_open_ms": df.loc[idx, "ts_open_ms"].values,
+        "event_type": "EV_PREMIUM_SPIKE",
+        "event_strength": strength,
+    })
+
+
+def _detect_premium_compression(df: pd.DataFrame) -> pd.DataFrame:
+    if "basis_zscore_24" not in df.columns:
+        return pd.DataFrame()
+    z = df["basis_zscore_24"]
+    z_max = THRESH["EV_PREMIUM_COMPRESSION"]["basis_zscore_24_max"]  # negative
+    cond = z <= z_max
+    fires = _first_cross(cond)
+    idx = df.index[fires]
+    if len(idx) == 0:
+        return pd.DataFrame()
+    strength = z.loc[idx].abs().astype(float).values
+    return pd.DataFrame({
+        "row_idx": idx,
+        "ts_open_ms": df.loc[idx, "ts_open_ms"].values,
+        "event_type": "EV_PREMIUM_COMPRESSION",
+        "event_strength": strength,
+    })
+
+
 def _detect_funding_window_pre(df: pd.DataFrame) -> pd.DataFrame:
     flag = df["pre_funding_30m"].fillna(0).astype(int) == 1
     fires = _first_cross(flag)
@@ -252,6 +294,8 @@ def detect_events_for(
         "EV_OI_FLUSH": _detect_oi_flush(feats),
         "EV_VOL_BREAKOUT": _detect_vol_breakout(feats, timeframe),
         "EV_FUNDING_WINDOW_PRE": _detect_funding_window_pre(feats),
+        "EV_PREMIUM_SPIKE": _detect_premium_spike(feats),
+        "EV_PREMIUM_COMPRESSION": _detect_premium_compression(feats),
     }
     parts = [d for d in detectors.values() if not d.empty]
     counts = {k: int(len(v)) for k, v in detectors.items()}

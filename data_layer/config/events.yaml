@@ -14,11 +14,13 @@ EV_FUND_EXTREME:
   fallback_abs_rate_bp: 5.0
 
 EV_PREMIUM_SPIKE:
-  basis_zscore_24_threshold: 3.0
+  # First cross of basis_zscore_24 >= +2 (mark > index by an amount
+  # >= 2 sigma above its 24-bar rolling mean).
+  basis_zscore_24_min: 2.0
 
 EV_PREMIUM_COMPRESSION:
-  basis_zscore_24_threshold: -3.0
-  require_prior_premium: true
+  # First cross of basis_zscore_24 <= -2.
+  basis_zscore_24_max: -2.0
 
 EV_OI_SPIKE_UP:
   # First cross of (oi_pct_change_1h > +3% AND oi_zscore_30d > 1).

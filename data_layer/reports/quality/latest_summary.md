@@ -1,26 +1,33 @@
 # Data Layer Quality Report (latest)
 
-Generated: 2026-05-03 12:35 UTC
+Generated: 2026-05-03 13:11 UTC
 Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 ## OHLCV (per series)
 
 | symbol | tf | days | expected | received | dedup | missing | duplicates | out-of-order | status |
 |---|---|---|---|---|---|---|---|---|---|
-| BTCUSDT | 5m | 7 | 2016 | 2016 | 2016 | 0 | 0 | 0 | green |
-| BTCUSDT | 1h | 30 | 720 | 720 | 720 | 0 | 0 | 0 | green |
+| BTCUSDT | 5m | 30 | 8640 | 8640 | 8640 | 0 | 0 | 0 | green |
+| BTCUSDT | 1h | 180 | 4320 | 4320 | 4320 | 0 | 0 | 0 | green |
 
 ## Funding
 
 | symbol | rows received | rows expected (~) | first settle (ms) | last settle (ms) |
 |---|---|---|---|---|
-| BTCUSDT | 90 | 90 | 1775001600000 | 1777564800000 |
+| BTCUSDT | 543 | 540 | 1761955200001 | 1777564800000 |
+
+## Mark / Index price klines
+
+| symbol | series | mark rows | index rows |
+|---|---|---|---|
+| BTCUSDT | 5m | 8640 | 8640 |
+| BTCUSDT | 1h | 4320 | 4320 |
 
 ## Open Interest (5-minute granularity)
 
 | symbol | rows received | max gap (minutes) | first ts (ms) | last ts (ms) |
 |---|---|---|---|---|
-| BTCUSDT | 2016 | 5.0 | 1777161900000 | 1777766400000 |
+| BTCUSDT | 8640 | 5.0 | 1775174700000 | 1777766400000 |
 
 ## Notes
 
