@@ -548,7 +548,7 @@ def refresh_event_leaderboard() -> int:
     lines.append("## Caveats")
     lines.append("")
     lines.append(
-        "- History window: 30d (5m) / 180d (1h); cells with n<30 are excluded "
+        "- History window: 90d (5m) / 180d (1h); cells with n<30 are excluded "
         "from this ranking but still present in the leaderboard parquet."
     )
     lines.append(

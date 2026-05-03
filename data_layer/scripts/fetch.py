@@ -1,9 +1,9 @@
 """Binance smoke fetcher.
 
 Targets: BTCUSDT only.
-- OHLCV 5m for the last 30 complete UTC days
+- OHLCV 5m for the last 90 complete UTC days
 - OHLCV 1h for the last 180 complete UTC days
-- Mark / index price klines (5m for 30d, 1h for 180d)
+- Mark / index price klines (5m for 90d, 1h for 180d)
 - Funding rate (monthly zips covering the last 180 complete UTC days)
 - OI / metrics 5-minute history for the last 30 complete UTC days
 
@@ -28,7 +28,7 @@ SYMBOL = "BTCUSDT"
 
 
 # Default smoke windows (overridable for unit tests).
-DAYS_5M = 30
+DAYS_5M = 90
 DAYS_1H = 180
 DAYS_FUNDING = 180
 DAYS_OI = 30

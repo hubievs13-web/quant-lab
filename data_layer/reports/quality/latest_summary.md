@@ -1,13 +1,13 @@
 # Data Layer Quality Report (latest)
 
-Generated: 2026-05-03 13:11 UTC
+Generated: 2026-05-03 13:39 UTC
 Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 ## OHLCV (per series)
 
 | symbol | tf | days | expected | received | dedup | missing | duplicates | out-of-order | status |
 |---|---|---|---|---|---|---|---|---|---|
-| BTCUSDT | 5m | 30 | 8640 | 8640 | 8640 | 0 | 0 | 0 | green |
+| BTCUSDT | 5m | 90 | 25920 | 25920 | 25920 | 0 | 0 | 0 | green |
 | BTCUSDT | 1h | 180 | 4320 | 4320 | 4320 | 0 | 0 | 0 | green |
 
 ## Funding
@@ -20,7 +20,7 @@ Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 | symbol | series | mark rows | index rows |
 |---|---|---|---|
-| BTCUSDT | 5m | 8640 | 8640 |
+| BTCUSDT | 5m | 25920 | 25920 |
 | BTCUSDT | 1h | 4320 | 4320 |
 
 ## Open Interest (5-minute granularity)

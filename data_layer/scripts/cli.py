@@ -58,7 +58,7 @@ def _run_quality_smoke() -> int:
         repo_root=repo_root,
         store_root=store_root,
         symbols=["BTCUSDT"],
-        series=[("5m", 30), ("1h", 180)],
+        series=[("5m", 90), ("1h", 180)],
         funding_window_days=180,
         oi_window_days=30,
     )
