@@ -51,8 +51,8 @@ data_layer/
       taker_volume.py
       long_short_ratio.py
       liquidations.py                     # WS-only in v1, see Section 3
-    bybit/...                             # mirror layout
-    okx/...                               # mirror layout
+    bybit/...                             # deferred / out of scope
+    okx/...                               # deferred / out of scope
 
   process/
     align.py                              # bar resampling and timestamp alignment
@@ -69,8 +69,6 @@ data_layer/
       binance/{ohlcv,funding,oi,mark,index,premium,taker,lsr,liquidations}/
         BTCUSDT/{5m,1h}/YYYY/MM/*.parquet
         ETHUSDT/{5m,1h}/YYYY/MM/*.parquet
-      bybit/...
-      okx/...
     processed/
       bars/{exchange}/{symbol}/{timeframe}.parquet
       features/{exchange}/{symbol}/{timeframe}.parquet
@@ -131,7 +129,7 @@ are `float64` unless noted.
 | volume_base | f64 | base asset traded |
 | volume_quote | f64 | quote asset traded |
 | trades | int64 | nullable |
-| exchange | str | enum {binance, bybit, okx} |
+| exchange | str | enum {binance} |
 | symbol | str | e.g. BTCUSDT |
 | timeframe | str | enum {5m, 1h} |
 
@@ -305,33 +303,19 @@ URLs are pinned in `data_layer/config/sources.yaml`.
   capture WS `<sym>@forceOrder` snapshots only when the user runs
   the streamer. Historical backfill deferred to v2.
 
-### 3.2 Bybit (secondary)
+### 3.2 Bybit (deferred / out of scope)
 
-- OHLCV: `GET /v5/market/kline` (`category=linear`)
-- Funding rate history: `GET /v5/market/funding/history`
-- Open interest: `GET /v5/market/open-interest`
-- Mark / index: `GET /v5/market/mark-price-kline`,
-  `index-price-kline`
-- Long/short ratio: `GET /v5/market/account-ratio`
-- Liquidations: WS `liquidation.<symbol>` only; historical backfill
-  deferred.
+Bybit is not part of the active project scope. Do not implement or
+ingest Bybit unless the user explicitly re-approves it later.
 
-### 3.3 OKX (tertiary)
+### 3.3 OKX (deferred / out of scope)
 
-- OHLCV: `GET /api/v5/market/candles` (`instType=SWAP`)
-- Funding rate history: `GET /api/v5/public/funding-rate-history`
-- Open interest: `GET /api/v5/public/open-interest`
-- Mark price candles: `GET /api/v5/market/mark-price-candles`
-- Index price candles: `GET /api/v5/market/index-candles`
-- Long/short ratio:
-  `GET /api/v5/rubik/stat/contracts/long-short-account-ratio`
-- Taker volume: `GET /api/v5/rubik/stat/taker-volume-contract`
-- Liquidations: WS `liquidation-orders` channel; historical bulk
-  deferred.
+OKX is not part of the active project scope. Do not implement or
+ingest OKX unless the user explicitly re-approves it later.
 
-Per-exchange ingest modules normalize to the schemas in Section 2.
-Any field not natively returned is null and surfaced in the quality
-report (Section 8).
+Binance ingest modules normalize to the schemas in Section 2. Any
+field not natively returned is null and surfaced in the quality report
+(Section 8).
 
 ## 4. Exact feature list
 
@@ -476,9 +460,8 @@ Per (event, horizon):
 - `mfe_pct` = max over `(t, t+h]` of `(high - close_t) / close_t`.
 - `mae_pct` = min over `(t, t+h]` of `(low - close_t) / close_t`.
 - `time_to_mfe_bars`, `time_to_mae_bars`: bar offsets from `t`.
-- Direction-adjusted views: leaderboard reports both long-side and
-  short-side aggregates per event type so the user can see which
-  direction the edge (if any) lives in.
+- Direction-adjusted views are out of scope for weak WATCHLIST-only
+  `EV_VOL_BREAKOUT` signals unless explicitly re-approved later.
 
 ## 8. Data quality checks
 
@@ -623,12 +606,13 @@ Each phase = one PR, gated by user approval (Section 14).
 - Generate `event_catalog.md`,
   `latest_event_leaderboard.md`, `outcome_summary.md`.
 
-### Phase 5: Bybit + OKX mirrors
+### Phase 5: deferred cross-exchange mirrors
 
-- Add `ingest/bybit/*` and `ingest/okx/*` matching the schemas and
-  quality checks.
-- Cross-exchange consistency notes appended to
-  `universe_status.md`.
+- Bybit and OKX are deferred and out of scope unless the user
+  explicitly re-approves them later.
+- Next active Data Layer validation target is Binance ETHUSDT using
+  the existing Binance path. Do not ingest or create data without
+  approval for that run.
 
 ### Phase 6: hypothesis seed briefs
 
@@ -642,8 +626,8 @@ Each phase = one PR, gated by user approval (Section 14).
 
 ### Phase 7 (optional, deferred): liquidations + order book
 
-- WS streamers for Binance forceOrder, Bybit liquidation, OKX
-  liquidation-orders.
+- WS streamer for Binance forceOrder only. Bybit and OKX liquidation
+  streams are deferred out of scope unless explicitly re-approved.
 - Order book snapshots only after explicit user approval; large
   data, gitignored, opt-in.
 
@@ -690,8 +674,8 @@ Each phase = one PR, gated by user approval (Section 14).
 - Security: no API key in v1; if added later for higher rate
   limits, it goes through repo secrets, never a committed file.
 - Cost: storage budget for v1 (BTCUSDT + ETHUSDT, two timeframes,
-  three exchanges, 12 months of derivatives) estimated < 5 GB;
-  documented in `data_layer/README.md`.
+  Binance only, 12 months of derivatives) documented in
+  `data_layer/README.md`.
 
 ## 14. What requires user approval before implementation
 
@@ -706,7 +690,8 @@ PR. Plan-only PR (this PR) does not need approval.
 - D. Phase 4 events + outcomes + leaderboard (defines what counts
   as an event for hypothesis generation; user must agree to the
   definitions in Sections 6 and 7).
-- E. Phase 5 Bybit + OKX mirrors (more network and storage).
+- E. Phase 5 cross-exchange mirrors are deferred / out of scope unless
+  the user explicitly re-approves Bybit or OKX later.
 - F. Phase 6 hypothesis seed briefs (touches
   `obsidian/00_INGEST_LOG.md` via a single append per run;
   otherwise wiki untouched).

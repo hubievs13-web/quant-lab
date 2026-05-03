@@ -1,72 +1,33 @@
 # Outcome Summary
 
-Last refresh: 2026-05-03 13:39 UTC.
-Source: `data_layer/store/processed/outcomes/binance/<SYMBOL>/<TF>.parquet`.
-Anchor: bar AFTER event (next-bar entry; no same-bar contamination).
-Counts are complete only. Rows with n < 10 omitted to keep the report compact; full table is in the leaderboard parquet.
+Last refresh: 2026-05-03 17:51 UTC.
+Rows shown only when `n >= 80` to keep the report compact and aligned with Pareto checks.
 
-## 5m (binance, BTCUSDT)
-
-| event | h | n | fwd | hit | MFE | MAE |
-|---|---|---|---|---|---|---|
-| FUNDING_WINDOW_PRE | h+1 | 264 | -0.00% | 47% | +0.07% | -0.07% |
-| FUNDING_WINDOW_PRE | h+3 | 264 | -0.01% | 55% | +0.13% | -0.12% |
-| FUNDING_WINDOW_PRE | h+12 | 264 | +0.03% | 53% | +0.28% | -0.26% |
-| FUNDING_WINDOW_PRE | h+72 | 264 | +0.00% | 48% | +0.74% | -0.67% |
-| FUND_FLIP | h+1 | 46 | +0.01% | 54% | +0.12% | -0.08% |
-| FUND_FLIP | h+3 | 46 | +0.00% | 43% | +0.14% | -0.17% |
-| FUND_FLIP | h+12 | 46 | +0.07% | 54% | +0.32% | -0.29% |
-| FUND_FLIP | h+72 | 46 | -0.05% | 46% | +0.69% | -0.78% |
-| PREMIUM_COMPRESSION | h+1 | 563 | +0.00% | 53% | +0.08% | -0.07% |
-| PREMIUM_COMPRESSION | h+3 | 563 | +0.02% | 53% | +0.15% | -0.13% |
-| PREMIUM_COMPRESSION | h+12 | 563 | +0.02% | 48% | +0.29% | -0.30% |
-| PREMIUM_COMPRESSION | h+72 | 562 | +0.10% | 51% | +0.79% | -0.77% |
-| PREMIUM_SPIKE | h+1 | 735 | -0.00% | 51% | +0.07% | -0.08% |
-| PREMIUM_SPIKE | h+3 | 735 | +0.00% | 49% | +0.14% | -0.14% |
-| PREMIUM_SPIKE | h+12 | 735 | +0.04% | 50% | +0.28% | -0.30% |
-| PREMIUM_SPIKE | h+72 | 732 | +0.05% | 52% | +0.74% | -0.74% |
-| VOL_BREAKOUT | h+1 | 88 | -0.08% | 47% | +0.14% | -0.20% |
-| VOL_BREAKOUT | h+3 | 88 | -0.07% | 47% | +0.26% | -0.27% |
-| VOL_BREAKOUT | h+12 | 88 | +0.03% | 41% | +0.44% | -0.60% |
-| VOL_BREAKOUT | h+72 | 87 | +0.24% | 60% | +0.83% | -0.88% |
-
-## 1h (binance, BTCUSDT)
-
-| event | h | n | fwd | hit | MFE | MAE |
-|---|---|---|---|---|---|---|
-| FUNDING_WINDOW_PRE | h+1 | 175 | -0.02% | 45% | +0.20% | -0.23% |
-| FUNDING_WINDOW_PRE | h+3 | 175 | -0.06% | 43% | +0.33% | -0.45% |
-| FUNDING_WINDOW_PRE | h+12 | 175 | -0.13% | 43% | +0.71% | -1.06% |
-| FUNDING_WINDOW_PRE | h+24 | 175 | -0.19% | 44% | +1.24% | -1.75% |
-| FUNDING_WINDOW_PRE | h+72 | 174 | +0.02% | 51% | +2.48% | -2.44% |
-| FUND_EXTREME | h+1 | 23 | -0.12% | 43% | +0.24% | -0.29% |
-| FUND_EXTREME | h+3 | 23 | -0.18% | 39% | +0.32% | -0.50% |
-| FUND_EXTREME | h+12 | 23 | -0.10% | 39% | +0.71% | -1.22% |
-| FUND_EXTREME | h+24 | 23 | +0.07% | 43% | +1.15% | -1.59% |
-| FUND_EXTREME | h+72 | 23 | +0.90% | 61% | +3.92% | -1.85% |
-| FUND_FLIP | h+1 | 75 | -0.06% | 52% | +0.22% | -0.27% |
-| FUND_FLIP | h+3 | 75 | -0.05% | 48% | +0.39% | -0.39% |
-| FUND_FLIP | h+12 | 75 | +0.02% | 48% | +1.00% | -1.07% |
-| FUND_FLIP | h+24 | 75 | +0.32% | 49% | +1.73% | -1.53% |
-| FUND_FLIP | h+72 | 74 | +0.12% | 51% | +2.81% | -2.06% |
-| PREMIUM_COMPRESSION | h+1 | 71 | +0.01% | 49% | +0.27% | -0.32% |
-| PREMIUM_COMPRESSION | h+3 | 71 | +0.15% | 59% | +0.49% | -0.45% |
-| PREMIUM_COMPRESSION | h+12 | 71 | +0.19% | 45% | +0.81% | -0.94% |
-| PREMIUM_COMPRESSION | h+24 | 71 | +0.11% | 48% | +1.15% | -1.44% |
-| PREMIUM_COMPRESSION | h+72 | 69 | -0.00% | 51% | +2.47% | -2.63% |
-| PREMIUM_SPIKE | h+1 | 131 | +0.07% | 53% | +0.31% | -0.30% |
-| PREMIUM_SPIKE | h+3 | 131 | +0.16% | 58% | +0.68% | -0.45% |
-| PREMIUM_SPIKE | h+12 | 131 | +0.12% | 55% | +1.18% | -0.87% |
-| PREMIUM_SPIKE | h+24 | 131 | +0.22% | 53% | +1.69% | -1.35% |
-| PREMIUM_SPIKE | h+72 | 131 | +0.08% | 54% | +3.04% | -2.16% |
-| VOL_BREAKOUT | h+1 | 34 | -0.25% | 35% | +0.48% | -0.68% |
-| VOL_BREAKOUT | h+3 | 34 | -0.54% | 32% | +0.51% | -1.12% |
-| VOL_BREAKOUT | h+12 | 34 | +0.00% | 50% | +0.99% | -1.72% |
-| VOL_BREAKOUT | h+24 | 34 | +0.36% | 47% | +1.61% | -2.16% |
-| VOL_BREAKOUT | h+72 | 34 | +0.23% | 56% | +3.05% | -3.73% |
-
-## Reading guide
-
-- `mean fwd` = mean of `forward_return_pct` over complete outcomes.
-- `hit>0` = share of complete outcomes with positive forward_return.
-- Smoke samples are tiny; `n < 30` should be treated as descriptive only.
+| symbol | tf | event | h | n | fwd | net | hit | MFE/|MAE| |
+|---|---|---|---|---|---|---|---|---|
+| ETHUSDT | 1h | FUNDING_WINDOW_PRE | h+1 | 175 | -0.03% | -0.21% | 46% | 0.82 |
+| ETHUSDT | 1h | PREMIUM_SPIKE | h+1 | 134 | -0.06% | -0.24% | 43% | 0.98 |
+| ETHUSDT | 1h | FUNDING_WINDOW_PRE | h+3 | 175 | -0.08% | -0.26% | 44% | 0.78 |
+| ETHUSDT | 1h | PREMIUM_SPIKE | h+3 | 134 | +0.08% | -0.10% | 55% | 1.16 |
+| ETHUSDT | 1h | FUNDING_WINDOW_PRE | h+12 | 175 | -0.18% | -0.36% | 47% | 0.74 |
+| ETHUSDT | 1h | PREMIUM_SPIKE | h+12 | 134 | -0.07% | -0.25% | 49% | 1.01 |
+| ETHUSDT | 1h | FUNDING_WINDOW_PRE | h+24 | 175 | -0.28% | -0.46% | 44% | 0.71 |
+| ETHUSDT | 1h | PREMIUM_SPIKE | h+24 | 134 | -0.22% | -0.40% | 49% | 0.81 |
+| ETHUSDT | 1h | FUNDING_WINDOW_PRE | h+72 | 174 | -0.23% | -0.41% | 51% | 0.99 |
+| ETHUSDT | 1h | PREMIUM_SPIKE | h+72 | 132 | -1.07% | -1.25% | 45% | 0.90 |
+| ETHUSDT | 5m | FUNDING_WINDOW_PRE | h+1 | 264 | -0.00% | -0.18% | 54% | 1.03 |
+| ETHUSDT | 5m | PREMIUM_COMPRESSION | h+1 | 542 | -0.01% | -0.19% | 51% | 1.04 |
+| ETHUSDT | 5m | PREMIUM_SPIKE | h+1 | 750 | +0.00% | -0.18% | 48% | 0.92 |
+| ETHUSDT | 5m | VOL_BREAKOUT | h+1 | 98 | +0.03% | -0.15% | 46% | 1.02 |
+| ETHUSDT | 5m | FUNDING_WINDOW_PRE | h+3 | 264 | -0.03% | -0.21% | 51% | 1.10 |
+| ETHUSDT | 5m | PREMIUM_COMPRESSION | h+3 | 542 | -0.01% | -0.19% | 50% | 0.96 |
+| ETHUSDT | 5m | PREMIUM_SPIKE | h+3 | 750 | +0.01% | -0.17% | 49% | 1.04 |
+| ETHUSDT | 5m | VOL_BREAKOUT | h+3 | 98 | +0.02% | -0.16% | 45% | 0.88 |
+| ETHUSDT | 5m | FUNDING_WINDOW_PRE | h+12 | 264 | +0.02% | -0.16% | 50% | 0.92 |
+| ETHUSDT | 5m | PREMIUM_COMPRESSION | h+12 | 541 | +0.01% | -0.17% | 48% | 0.89 |
+| ETHUSDT | 5m | PREMIUM_SPIKE | h+12 | 750 | +0.01% | -0.17% | 50% | 1.00 |
+| ETHUSDT | 5m | VOL_BREAKOUT | h+12 | 98 | +0.13% | -0.05% | 45% | 0.87 |
+| ETHUSDT | 5m | FUNDING_WINDOW_PRE | h+72 | 264 | +0.04% | -0.14% | 51% | 1.02 |
+| ETHUSDT | 5m | PREMIUM_COMPRESSION | h+72 | 541 | +0.05% | -0.13% | 50% | 0.94 |
+| ETHUSDT | 5m | PREMIUM_SPIKE | h+72 | 747 | +0.03% | -0.15% | 51% | 1.04 |
+| ETHUSDT | 5m | VOL_BREAKOUT | h+72 | 97 | +0.38% | +0.20% | 51% | 1.12 |

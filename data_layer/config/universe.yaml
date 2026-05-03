@@ -2,7 +2,7 @@
 # Market Research Data Layer. v1 covers BTCUSDT and ETHUSDT only.
 # See DATA_LAYER_IMPLEMENTATION_PLAN.md Section 1.
 
-exchanges: [binance, bybit, okx]
+exchanges: [binance]
 symbols: [BTCUSDT, ETHUSDT]
 timeframes: [5m, 1h]
 

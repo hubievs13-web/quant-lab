@@ -1,37 +1,18 @@
 # Universe Status
 
-Last refresh: 2026-05-03 13:39 UTC.
+Last refresh: 2026-05-03 17:51 UTC.
 
-## Loaded series (binance, BTCUSDT)
+## Loaded series (binance)
 
-| timeframe | first bar | last bar | rows |
-|---|---|---|---|
-| 5m | 2026-02-02 00:00 UTC | 2026-05-02 23:55 UTC | 25920 |
-| 1h | 2025-11-04 00:00 UTC | 2026-05-02 23:00 UTC | 4320 |
+| symbol | tf | first bar | last bar | bars | features | regimes | events | outcomes | leaderboard |
+|---|---|---|---|---|---|---|---|---|---|
+| BTCUSDT | 5m | - | - | 0 | 0 | 0 | 0 | 0 | 0 |
+| BTCUSDT | 1h | - | - | 0 | 0 | 0 | 0 | 0 | 0 |
+| ETHUSDT | 5m | 2026-02-02 00:00 UTC | 2026-05-02 23:55 UTC | 25920 | 25920 | 25920 | 1723 | 6892 | 32 |
+| ETHUSDT | 1h | 2025-11-04 00:00 UTC | 2026-05-02 23:00 UTC | 4320 | 4320 | 4320 | 521 | 2605 | 40 |
 
-## Phase 3 outputs (binance, BTCUSDT)
+## Scope
 
-| timeframe | features rows | regimes rows |
-|---|---|---|
-| 5m | 25920 | 25920 |
-| 1h | 4320 | 4320 |
-
-## Derivatives
-
-- Funding rate: see `data_layer/reports/quality/latest_summary.md`.
-- Open Interest (5-min metrics): see `data_layer/reports/quality/latest_summary.md`.
-
-## Phase 4 outputs (binance, BTCUSDT)
-
-| timeframe | events rows | outcomes rows | leaderboard rows |
-|---|---|---|---|
-| 5m | 1713 | 6852 | 32 |
-| 1h | 512 | 2560 | 35 |
-
-## Pending phases
-
-- Phase 5 (Bybit + OKX): pending approval
-- Phase 6 (hypothesis seed briefs): pending approval
-- Phase 7 (liquidations + book): deferred
-
-Read order for Codex / Devin: see `data_layer/README.md`.
+- Binance only. Bybit / OKX remain out of scope.
+- Validation scope: BTCUSDT and ETHUSDT.
+- Quality details: `data_layer/reports/quality/latest_summary.md`.

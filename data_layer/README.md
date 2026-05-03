@@ -3,7 +3,7 @@
 File-based Market Research Data Layer for crypto futures research.
 
 Plan: `data_layer/DATA_LAYER_IMPLEMENTATION_PLAN.md` (Sections 1-14).
-Current phase: **Phase 2 (Binance smoke ingest)**. Phases 3-7 are
+Current phase: **Phase 2 (Binance smoke ingest)**. Phases 3-4 and 6-7 are
 still gated by user approval per plan Section 14.
 
 Phase 2 source: `data.binance.vision` public CDN (no API key).
@@ -14,8 +14,9 @@ fetchers.
 ## What is in this folder
 
 - `config/` - symbols, sources, features, regime/event thresholds.
-- `ingest/` - per-exchange ingest modules. Binance OHLCV / funding /
-  open-interest implemented in Phase 2; Bybit and OKX are stubs.
+- `ingest/` - Binance ingest modules. Binance OHLCV / funding /
+  open-interest implemented in Phase 2; Bybit and OKX are deferred
+  out of scope unless the user explicitly re-approves them later.
 - `process/` - feature / regime / event / outcome / leaderboard /
   quality engines. `align`, `join`, `quality` implemented in Phase 2;
   the rest are stubs until Phases 3-4.
@@ -72,5 +73,11 @@ Forbidden by default:
   `results/experiments.csv`, `obsidian/01_Rules/` through
   `obsidian/10_Codex_Instructions/`.
 - New Python dependencies beyond `pandas` / `pyarrow`.
-- Bybit / OKX ingest (Phase 5).
+- Bybit / OKX ingest; deferred out of scope unless explicitly
+  re-approved later.
 - Features / regimes / events (Phases 3-4).
+
+## Next Data Layer step
+
+- Validate ETHUSDT on Binance using the existing Data Layer path. Do
+  not ingest or create data until the user approves that run.

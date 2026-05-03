@@ -31,6 +31,9 @@ SUBCOMMANDS: dict[str, str] = {
     "detect-events-smoke": "Phase 4 smoke: detect events for BTCUSDT 5m/1h.",
     "build-outcomes-smoke": "Phase 4 smoke: build forward outcomes for BTCUSDT 5m/1h.",
     "build-leaderboard-smoke": "Phase 4 smoke: aggregate leaderboard for BTCUSDT 5m/1h.",
+    "fetch-binance-validation": "Fetch Binance BTCUSDT + ETHUSDT validation windows.",
+    "rebuild-validation": "Full rebuild for Binance BTCUSDT + ETHUSDT validation.",
+    "quality-validation": "Emit quality report for Binance BTCUSDT + ETHUSDT validation.",
     "refresh-summaries": "Regenerate reports/summaries/* and reports/leaderboards/*.",
     "fetch": "Generic fetch (Phase 5+).",
     "rebuild": "Generic rebuild (Phase 5+).",
@@ -74,6 +77,30 @@ def _run_quality_smoke() -> int:
     return 0
 
 
+def _run_quality_validation() -> int:
+    from data_layer.process.quality import run_quality_smoke
+
+    repo_root = Path(__file__).resolve().parents[2]
+    store_root = repo_root / "data_layer" / "store"
+    out = run_quality_smoke(
+        repo_root=repo_root,
+        store_root=store_root,
+        symbols=["BTCUSDT", "ETHUSDT"],
+        series=[("5m", 90), ("1h", 180)],
+        funding_window_days=180,
+        oi_window_days=30,
+    )
+    print("[quality] wrote data_layer/reports/quality/latest_summary.md")
+    for sym, sym_out in out.items():
+        for tf, q in sym_out.get("ohlcv", {}).items():
+            print(
+                f"  {sym} {tf}: status={q['status']} "
+                f"received={q['received_bars']}/{q['expected_bars']} "
+                f"dups={q['duplicate_bars']} ooo={q['out_of_order_rows']}"
+            )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -84,12 +111,22 @@ def main(argv: list[str] | None = None) -> int:
         from data_layer.scripts.fetch import fetch_binance_smoke
 
         return fetch_binance_smoke()
+    if args.cmd == "fetch-binance-validation":
+        from data_layer.scripts.fetch import fetch_binance_validation
+
+        return fetch_binance_validation()
     if args.cmd == "rebuild-smoke":
         from data_layer.scripts.rebuild import rebuild_smoke
 
         return rebuild_smoke()
+    if args.cmd == "rebuild-validation":
+        from data_layer.scripts.rebuild import rebuild_validation
+
+        return rebuild_validation()
     if args.cmd == "quality-smoke":
         return _run_quality_smoke()
+    if args.cmd == "quality-validation":
+        return _run_quality_validation()
     if args.cmd == "build-features-smoke":
         from data_layer.process.features import build_features_smoke
 
