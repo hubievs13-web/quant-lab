@@ -1,0 +1,44 @@
+# Feature definitions. Categories from
+# DATA_LAYER_IMPLEMENTATION_PLAN.md Section 4.
+# All windows are in bars at the row's own timeframe unless suffixed.
+
+price_return:
+  ret_lookbacks_bars: [1, 3, 12, 72]
+  vol_close_to_close_window: 24
+  parkinson_window: 24
+  atr_window: 14
+
+trend:
+  ema_fast: 12
+  ema_slow: 48
+  slope_window: 24
+  adx_window: 14
+
+volume_flow:
+  vol_zscore_window: 24
+  taker_imbalance_ema_window: 12
+  taker_quote_zscore_window: 24
+
+funding_basis:
+  funding_zscore_window_days: 30
+  basis_zscore_24_window: 24
+  basis_zscore_30d_window_days: 30
+
+open_interest:
+  oi_pct_change_short_hours: 1
+  oi_pct_change_long_hours: 24
+  oi_zscore_window_days: 30
+  oi_vs_price_corr_window: 24
+
+crowding:
+  lsr_zscore_window_days: 30
+  extreme_abs_z: 2.0
+
+liquidations:
+  liq_zscore_window_bars: 24
+  liq_imbalance_window_hours: 24
+
+session:
+  asia_utc_hours: [0, 8]
+  london_utc_hours: [7, 15]
+  ny_utc_hours: [13, 21]

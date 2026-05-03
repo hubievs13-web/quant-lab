@@ -1,0 +1,26 @@
+# Regime threshold parameters. See DATA_LAYER_IMPLEMENTATION_PLAN.md
+# Section 5. Thresholds are timestamped in the regime parquet so
+# historical labels remain reproducible after edits.
+
+trend:
+  adx_min_strong: 20.0
+
+vol:
+  bucket_low_pct: 33.0
+  bucket_high_pct: 66.0
+
+funding:
+  z_extreme_abs: 2.0
+  flat_abs_rate_bp: 1.0
+
+basis:
+  z_extreme_abs: 2.0
+
+crowding:
+  z_extreme_abs: 2.0
+
+liquidity:
+  taker_quote_zscore_thin: -1.0
+  taker_quote_zscore_thick: 1.0
+  oi_zscore_thin: -1.0
+  oi_zscore_thick: 1.0
