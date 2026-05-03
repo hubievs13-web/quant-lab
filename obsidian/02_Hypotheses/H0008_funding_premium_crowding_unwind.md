@@ -1,7 +1,7 @@
 ---
 id: H0008
 slug: funding_premium_crowding_unwind
-status: draft
+status: awaiting_audit
 created: 2026-05-02
 mechanism_class: funding
 symbols: [BTCUSDT, ETHUSDT]
