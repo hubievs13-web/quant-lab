@@ -90,10 +90,12 @@ H0001, H0003, H0004, H0006 frontmatter is correct (`rejected`).
   `report.md`, `statistics.json`.
 - `obsidian/04_Backtests/BT0001_H0002_2026-04-29/` is missing
   PRIMARY evidence files: `trades.csv` and `orders.csv`.
-- H0007 has a verdict line in `experiments_log.md` (2026-05-01,
-  FAIL / REJECTED, "Determined Orange Mule" run) but **no
-  backtest folder exists** under `obsidian/04_Backtests/`.
-  Evidence trail for the H0007 verdict is not in the vault.
+
+### Explained gaps
+
+- H0007 backtest folder: never generated (not lost / not
+  gitignored). See `obsidian/05_Rejected/H0007_funding_settlement_unwind.md`
+  l.148 — "Backtest report: not created in this recording pass."
 
 ## 6. Oversize files (do-not-read-by-default)
 
