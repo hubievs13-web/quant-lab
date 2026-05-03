@@ -1,36 +1,66 @@
 """CLI entrypoint for the Market Research Data Layer.
 
-Phase 1 scaffold: every subcommand prints "not implemented".
-Subcommands are wired in subsequent phases per
-`DATA_LAYER_IMPLEMENTATION_PLAN.md` Section 12 and gated by user
-approval per plan Section 14.
+Phase 2 wires three smoke subcommands. All others remain stubs and
+will be filled by their respective phase PRs.
 
 Usage:
 
     python -m data_layer.scripts.cli --help
+    python -m data_layer.scripts.cli fetch-binance-smoke
+    python -m data_layer.scripts.cli rebuild-smoke
+    python -m data_layer.scripts.cli quality-smoke
 """
 from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
 SUBCOMMANDS: dict[str, str] = {
-    "fetch": "Fetch raw data from a configured source (Phase 2+).",
-    "rebuild": "Rebuild processed/* tables from raw/* (Phase 2+).",
-    "refresh-summaries": "Regenerate reports/summaries/* (Phase 6).",
-    "query": "Run a named query and emit a small markdown answer (Phase 6).",
+    "fetch-binance-smoke": "Phase 2 smoke: fetch BTCUSDT OHLCV+funding+OI from data.binance.vision.",
+    "rebuild-smoke": "Phase 2 smoke: align + join local raw/ into processed/.",
+    "quality-smoke": "Phase 2 smoke: emit quality JSONs + reports/quality/latest_summary.md.",
+    "fetch": "Generic fetch (Phase 3+).",
+    "rebuild": "Generic rebuild (Phase 3+).",
+    "refresh-summaries": "Regenerate reports/summaries/* (Phase 2 only emits universe_status.md).",
+    "query": "Run a named query (Phase 6).",
 }
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="data_layer.cli",
-        description="Market Research Data Layer CLI (Phase 1 stub).",
+        description="Market Research Data Layer CLI (Phase 2).",
     )
     sub = parser.add_subparsers(dest="cmd", metavar="<cmd>")
     for name, desc in SUBCOMMANDS.items():
         sub.add_parser(name, help=desc)
     return parser
+
+
+def _run_quality_smoke() -> int:
+    from data_layer.process.quality import run_quality_smoke
+
+    repo_root = Path(__file__).resolve().parents[2]
+    store_root = repo_root / "data_layer" / "store"
+    out = run_quality_smoke(
+        repo_root=repo_root,
+        store_root=store_root,
+        symbols=["BTCUSDT"],
+        series=[("5m", 7), ("1h", 30)],
+        funding_window_days=30,
+        oi_window_days=7,
+    )
+    print(f"[quality] wrote data_layer/reports/quality/latest_summary.md")
+    print(f"[quality] series:")
+    for sym, sym_out in out.items():
+        for tf, q in sym_out.get("ohlcv", {}).items():
+            print(
+                f"  {sym} {tf}: status={q['status']} "
+                f"received={q['received_bars']}/{q['expected_bars']} "
+                f"dups={q['duplicate_bars']} ooo={q['out_of_order_rows']}"
+            )
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -39,7 +69,21 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd is None:
         parser.print_help()
         return 0
-    print(f"data_layer.cli {args.cmd}: not implemented (Phase 1 scaffold)")
+    if args.cmd == "fetch-binance-smoke":
+        from data_layer.scripts.fetch import fetch_binance_smoke
+
+        return fetch_binance_smoke()
+    if args.cmd == "rebuild-smoke":
+        from data_layer.scripts.rebuild import rebuild_smoke
+
+        return rebuild_smoke()
+    if args.cmd == "quality-smoke":
+        return _run_quality_smoke()
+    if args.cmd == "refresh-summaries":
+        from data_layer.scripts.refresh_summaries import refresh_universe_status
+
+        return refresh_universe_status()
+    print(f"data_layer.cli {args.cmd}: not implemented (later phase)")
     return 0
 
 
