@@ -1,6 +1,6 @@
 # Universe Status
 
-Last refresh: 2026-05-03 12:35 UTC.
+Last refresh: 2026-05-03 12:48 UTC.
 
 ## Loaded series (binance, BTCUSDT)
 
@@ -9,6 +9,13 @@ Last refresh: 2026-05-03 12:35 UTC.
 | 5m | 2026-04-26 00:00 UTC | 2026-05-02 23:55 UTC | 2016 |
 | 1h | 2026-04-03 00:00 UTC | 2026-05-02 23:00 UTC | 720 |
 
+## Phase 3 outputs (binance, BTCUSDT)
+
+| timeframe | features rows | regimes rows |
+|---|---|---|
+| 5m | 2016 | 2016 |
+| 1h | 720 | 720 |
+
 ## Derivatives
 
 - Funding rate: see `data_layer/reports/quality/latest_summary.md`.
@@ -16,7 +23,6 @@ Last refresh: 2026-05-03 12:35 UTC.
 
 ## Pending phases
 
-- Phase 3 (features + regimes): pending approval
 - Phase 4 (events + outcomes + leaderboard): pending approval
 - Phase 5 (Bybit + OKX): pending approval
 - Phase 6 (hypothesis seed briefs): pending approval

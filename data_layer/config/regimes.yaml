@@ -4,20 +4,24 @@
 
 trend:
   adx_min_strong: 20.0
+  ema_minus_slow_min_pct: 0.005   # |EMA_fast - EMA_slow| / close >= 0.5% to count as a trend
+  slope_min: 0.0                  # OLS slope of log(close) over slope_window must agree with trend sign
 
 vol:
   bucket_low_pct: 33.0
   bucket_high_pct: 66.0
+  bucket_history_days: 7         # rolling 7-day percentile of vol_close_to_close_24
 
 funding:
-  z_extreme_abs: 2.0
-  flat_abs_rate_bp: 1.0
+  z_extreme_abs: 2.0             # |z| >= 2 over 30d window -> pos_extreme / neg_extreme
+  extreme_abs_rate_bp: 5.0       # |rate| >= 5 bp -> pos_extreme / neg_extreme
+  flat_abs_rate_bp: 1.0          # |rate| < 1 bp -> flat
 
 basis:
   z_extreme_abs: 2.0
 
 crowding:
-  z_extreme_abs: 2.0
+  z_extreme_abs: 2.0             # Phase 4 will use top_trader_position_ratio z-score
 
 liquidity:
   taker_quote_zscore_thin: -1.0

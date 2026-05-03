@@ -1,7 +1,7 @@
 """CLI entrypoint for the Market Research Data Layer.
 
-Phase 2 wires three smoke subcommands. All others remain stubs and
-will be filled by their respective phase PRs.
+Phase 2 wired the ingest + quality smoke commands; Phase 3 adds
+features + regimes. Future-phase subcommands still stub-print.
 
 Usage:
 
@@ -9,6 +9,9 @@ Usage:
     python -m data_layer.scripts.cli fetch-binance-smoke
     python -m data_layer.scripts.cli rebuild-smoke
     python -m data_layer.scripts.cli quality-smoke
+    python -m data_layer.scripts.cli build-features-smoke
+    python -m data_layer.scripts.cli build-regimes-smoke
+    python -m data_layer.scripts.cli refresh-summaries
 """
 from __future__ import annotations
 
@@ -20,9 +23,11 @@ SUBCOMMANDS: dict[str, str] = {
     "fetch-binance-smoke": "Phase 2 smoke: fetch BTCUSDT OHLCV+funding+OI from data.binance.vision.",
     "rebuild-smoke": "Phase 2 smoke: align + join local raw/ into processed/.",
     "quality-smoke": "Phase 2 smoke: emit quality JSONs + reports/quality/latest_summary.md.",
-    "fetch": "Generic fetch (Phase 3+).",
-    "rebuild": "Generic rebuild (Phase 3+).",
-    "refresh-summaries": "Regenerate reports/summaries/* (Phase 2 only emits universe_status.md).",
+    "build-features-smoke": "Phase 3 smoke: compute features for BTCUSDT 5m/1h.",
+    "build-regimes-smoke": "Phase 3 smoke: compute regime labels for BTCUSDT 5m/1h.",
+    "refresh-summaries": "Regenerate reports/summaries/* (universe + feature_catalog + regime_summary).",
+    "fetch": "Generic fetch (Phase 5+).",
+    "rebuild": "Generic rebuild (Phase 5+).",
     "query": "Run a named query (Phase 6).",
 }
 
@@ -79,10 +84,18 @@ def main(argv: list[str] | None = None) -> int:
         return rebuild_smoke()
     if args.cmd == "quality-smoke":
         return _run_quality_smoke()
-    if args.cmd == "refresh-summaries":
-        from data_layer.scripts.refresh_summaries import refresh_universe_status
+    if args.cmd == "build-features-smoke":
+        from data_layer.process.features import build_features_smoke
 
-        return refresh_universe_status()
+        return build_features_smoke()
+    if args.cmd == "build-regimes-smoke":
+        from data_layer.process.regimes import build_regimes_smoke
+
+        return build_regimes_smoke()
+    if args.cmd == "refresh-summaries":
+        from data_layer.scripts.refresh_summaries import refresh_all_summaries
+
+        return refresh_all_summaries()
     print(f"data_layer.cli {args.cmd}: not implemented (later phase)")
     return 0
 
