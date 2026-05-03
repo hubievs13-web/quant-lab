@@ -11,6 +11,9 @@ Usage:
     python -m data_layer.scripts.cli quality-smoke
     python -m data_layer.scripts.cli build-features-smoke
     python -m data_layer.scripts.cli build-regimes-smoke
+    python -m data_layer.scripts.cli detect-events-smoke
+    python -m data_layer.scripts.cli build-outcomes-smoke
+    python -m data_layer.scripts.cli build-leaderboard-smoke
     python -m data_layer.scripts.cli refresh-summaries
 """
 from __future__ import annotations
@@ -25,7 +28,10 @@ SUBCOMMANDS: dict[str, str] = {
     "quality-smoke": "Phase 2 smoke: emit quality JSONs + reports/quality/latest_summary.md.",
     "build-features-smoke": "Phase 3 smoke: compute features for BTCUSDT 5m/1h.",
     "build-regimes-smoke": "Phase 3 smoke: compute regime labels for BTCUSDT 5m/1h.",
-    "refresh-summaries": "Regenerate reports/summaries/* (universe + feature_catalog + regime_summary).",
+    "detect-events-smoke": "Phase 4 smoke: detect events for BTCUSDT 5m/1h.",
+    "build-outcomes-smoke": "Phase 4 smoke: build forward outcomes for BTCUSDT 5m/1h.",
+    "build-leaderboard-smoke": "Phase 4 smoke: aggregate leaderboard for BTCUSDT 5m/1h.",
+    "refresh-summaries": "Regenerate reports/summaries/* and reports/leaderboards/*.",
     "fetch": "Generic fetch (Phase 5+).",
     "rebuild": "Generic rebuild (Phase 5+).",
     "query": "Run a named query (Phase 6).",
@@ -92,6 +98,18 @@ def main(argv: list[str] | None = None) -> int:
         from data_layer.process.regimes import build_regimes_smoke
 
         return build_regimes_smoke()
+    if args.cmd == "detect-events-smoke":
+        from data_layer.process.events import detect_events_smoke
+
+        return detect_events_smoke()
+    if args.cmd == "build-outcomes-smoke":
+        from data_layer.process.outcomes import build_outcomes_smoke
+
+        return build_outcomes_smoke()
+    if args.cmd == "build-leaderboard-smoke":
+        from data_layer.process.leaderboard import build_leaderboard_smoke
+
+        return build_leaderboard_smoke()
     if args.cmd == "refresh-summaries":
         from data_layer.scripts.refresh_summaries import refresh_all_summaries
 

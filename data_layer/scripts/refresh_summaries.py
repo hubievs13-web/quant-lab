@@ -1,10 +1,13 @@
 """Regenerate small Codex-readable markdown summaries.
 
-Phase 2 emitted only `summaries/universe_status.md`. Phase 3 adds:
-- `summaries/feature_catalog.md`
-- `summaries/regime_summary.md`
+Phase 2 emitted only `summaries/universe_status.md`. Phase 3 added
+`summaries/feature_catalog.md` and `summaries/regime_summary.md`.
+Phase 4 adds:
+- `summaries/event_catalog.md`
+- `summaries/outcome_summary.md`
+- `leaderboards/latest_event_leaderboard.md`
 
-All reports stay <= 5 KB (verified by an assert at write time).
+All reports stay <= 5 KB (verified at write time).
 """
 from __future__ import annotations
 
@@ -15,6 +18,7 @@ from pathlib import Path
 import pandas as pd
 import pyarrow.parquet as pq
 
+from data_layer.process.events import IMPLEMENTED_EVENT_TYPES, SKIPPED_EVENT_TYPES, THRESH as EVENT_THRESH
 from data_layer.process.features import FEATURE_SPECS
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -32,6 +36,10 @@ def _utc_now() -> str:
 def _read_meta(p: Path) -> tuple[int, int | None, int | None]:
     if not p.exists():
         return 0, None, None
+    schema = pq.read_schema(p)
+    if "ts_open_ms" not in schema.names:
+        n = pq.ParquetFile(p).metadata.num_rows
+        return n, None, None
     t = pq.read_table(p, columns=["ts_open_ms"])
     n = t.num_rows
     if n == 0:
@@ -95,9 +103,24 @@ def refresh_universe_status() -> int:
     lines.append("- Funding rate: see `data_layer/reports/quality/latest_summary.md`.")
     lines.append("- Open Interest (5-min metrics): see `data_layer/reports/quality/latest_summary.md`.")
     lines.append("")
+    lines.append("## Phase 4 outputs (binance, BTCUSDT)")
+    lines.append("")
+    lines.append("| timeframe | events rows | outcomes rows | leaderboard rows |")
+    lines.append("|---|---|---|---|")
+    for tf in TIMEFRAMES:
+        ev_n, _, _ = _read_meta(
+            STORE_ROOT / "processed/events/binance" / SYMBOL / f"{tf}.parquet"
+        )
+        out_n, _, _ = _read_meta(
+            STORE_ROOT / "processed/outcomes/binance" / SYMBOL / f"{tf}.parquet"
+        )
+        lb_n, _, _ = _read_meta(
+            STORE_ROOT / "processed/leaderboard/binance" / SYMBOL / f"{tf}.parquet"
+        )
+        lines.append(f"| {tf} | {ev_n} | {out_n} | {lb_n} |")
+    lines.append("")
     lines.append("## Pending phases")
     lines.append("")
-    lines.append("- Phase 4 (events + outcomes + leaderboard): pending approval")
     lines.append("- Phase 5 (Bybit + OKX): pending approval")
     lines.append("- Phase 6 (hypothesis seed briefs): pending approval")
     lines.append("- Phase 7 (liquidations + book): deferred")
@@ -290,10 +313,261 @@ def refresh_regime_summary() -> int:
     return 0
 
 
+# ---------- event_catalog.md (Phase 4) -------------------------------
+
+IMPLEMENTED_DESC = {
+    "EV_FUND_FLIP": "funding_rate sign change between consecutive bars (>= 0.5 bp move)",
+    "EV_FUND_EXTREME": "|funding_rate_zscore_30d| >= 2 (or |rate| >= 5 bp fallback)",
+    "EV_OI_SPIKE_UP": "oi_pct_change_1h > +3% AND (oi_zscore_30d > 1 OR z insufficient)",
+    "EV_OI_FLUSH": "oi_pct_change_1h < -3%",
+    "EV_VOL_BREAKOUT": "range_pct >= rolling 99-pctile AND taker_quote_zscore_24 > 2",
+    "EV_FUNDING_WINDOW_PRE": "informational; minutes_to_next_settle <= 30 (first cross)",
+}
+
+
+def _events_path(tf: str) -> Path:
+    return STORE_ROOT / "processed/events/binance" / SYMBOL / f"{tf}.parquet"
+
+
+def refresh_event_catalog() -> int:
+    counts: dict[str, dict[str, int]] = {}
+    for tf in TIMEFRAMES:
+        p = _events_path(tf)
+        if not p.exists():
+            counts[tf] = {}
+            continue
+        df = pd.read_parquet(p)
+        if df.empty:
+            counts[tf] = {ev: 0 for ev in IMPLEMENTED_EVENT_TYPES}
+        else:
+            vc = df["event_type"].value_counts().to_dict()
+            counts[tf] = {ev: int(vc.get(ev, 0)) for ev in IMPLEMENTED_EVENT_TYPES}
+
+    lines: list[str] = []
+    lines.append("# Event Catalog")
+    lines.append("")
+    lines.append(f"Last refresh: {_utc_now()}.")
+    lines.append(
+        "Source: `data_layer/store/processed/events/binance/<SYMBOL>/<TF>.parquet`."
+    )
+    lines.append(
+        "Defs in `data_layer/config/events.yaml` and "
+        "`data_layer/process/events.py:THRESH`."
+    )
+    lines.append("")
+    lines.append(
+        "Anti-lookahead: each event uses only features at bar i; "
+        "first-cross only (False -> True transition)."
+    )
+    lines.append("")
+    lines.append("## Implemented events (binance, BTCUSDT)")
+    lines.append("")
+    lines.append("| event_type | description | 5m count | 1h count |")
+    lines.append("|---|---|---|---|")
+    for ev in IMPLEMENTED_EVENT_TYPES:
+        c5 = counts.get("5m", {}).get(ev, 0)
+        c1 = counts.get("1h", {}).get(ev, 0)
+        lines.append(f"| {ev} | {IMPLEMENTED_DESC[ev]} | {c5} | {c1} |")
+
+    lines.append("")
+    lines.append("## Skipped events (insufficient_data)")
+    lines.append("")
+    lines.append("| event_type | reason |")
+    lines.append("|---|---|")
+    for ev, reason in SKIPPED_EVENT_TYPES.items():
+        lines.append(f"| {ev} | {reason} |")
+
+    lines.append("")
+    lines.append("## Notes")
+    lines.append("")
+    lines.append(
+        "- `event_strength` is in absolute z-score units where applicable; "
+        "for fallback paths it is normalised to the same magnitude scale."
+    )
+    lines.append(
+        "- `context_regime` on each event row is the `composite_label` from "
+        "`processed/regimes` at the same `ts_open_ms`."
+    )
+
+    out = REPORTS / "summaries" / "event_catalog.md"
+    _write_capped(out, lines)
+    print(f"[summaries] wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
+# ---------- outcome_summary.md (Phase 4) -----------------------------
+
+def _outcomes_path(tf: str) -> Path:
+    return STORE_ROOT / "processed/outcomes/binance" / SYMBOL / f"{tf}.parquet"
+
+
+def _leaderboard_path(tf: str) -> Path:
+    return STORE_ROOT / "processed/leaderboard/binance" / SYMBOL / f"{tf}.parquet"
+
+
+def _fmt_pct(v: float) -> str:
+    if pd.isna(v):
+        return "-"
+    return f"{v:+.2f}%"
+
+
+def _fmt_ratio(v: float) -> str:
+    if pd.isna(v):
+        return "-"
+    return f"{v:.2f}"
+
+
+def refresh_outcome_summary() -> int:
+    lines: list[str] = []
+    lines.append("# Outcome Summary")
+    lines.append("")
+    lines.append(f"Last refresh: {_utc_now()}.")
+    lines.append(
+        "Source: `data_layer/store/processed/outcomes/binance/<SYMBOL>/<TF>.parquet`."
+    )
+    lines.append(
+        "Anchor: bar AFTER event (next-bar entry; no same-bar contamination)."
+    )
+    lines.append(
+        "Counts are complete only; `inc` column lists rows where the horizon "
+        "window was truncated by end-of-data."
+    )
+    lines.append("")
+
+    for tf in TIMEFRAMES:
+        p = _leaderboard_path(tf)
+        if not p.exists():
+            continue
+        df = pd.read_parquet(p)
+        if df.empty:
+            continue
+        lines.append(f"## {tf} (binance, BTCUSDT)")
+        lines.append("")
+        lines.append(
+            "| event_type | h | n | inc | mean fwd | hit>0 | med MFE | med MAE |"
+        )
+        lines.append("|---|---|---|---|---|---|---|---|")
+        df = df.copy()
+        df["_h"] = df["horizon"].str.replace("h+", "", regex=False).astype(int)
+        df = df.sort_values(["event_type", "_h"])
+        for _, r in df.iterrows():
+            n = int(r["count"])
+            inc = int(r["count_incomplete"])
+            hit = (
+                f"{r['hit_rate_at_zero'] * 100:.0f}%"
+                if pd.notna(r["hit_rate_at_zero"]) else "-"
+            )
+            lines.append(
+                f"| {r['event_type']} | {r['horizon']} | {n} | {inc} | "
+                f"{_fmt_pct(r['mean_forward_return'])} | {hit} | "
+                f"{_fmt_pct(r['median_mfe'])} | {_fmt_pct(r['median_mae'])} |"
+            )
+        lines.append("")
+
+    lines.append("## Reading guide")
+    lines.append("")
+    lines.append(
+        "- `mean fwd` = mean of `forward_return_pct` over complete outcomes."
+    )
+    lines.append(
+        "- `hit>0` = share of complete outcomes with positive forward_return."
+    )
+    lines.append(
+        "- Smoke samples are tiny; `n < 30` should be treated as descriptive only."
+    )
+
+    out = REPORTS / "summaries" / "outcome_summary.md"
+    _write_capped(out, lines)
+    print(f"[summaries] wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
+# ---------- leaderboards/latest_event_leaderboard.md (Phase 4) -------
+
+MIN_COUNT_FOR_RANKING = 3
+TOP_K = 12
+
+
+def refresh_event_leaderboard() -> int:
+    rows: list[dict] = []
+    for tf in TIMEFRAMES:
+        p = _leaderboard_path(tf)
+        if not p.exists():
+            continue
+        df = pd.read_parquet(p)
+        if df.empty:
+            continue
+        df = df.copy()
+        df["timeframe"] = tf
+        rows.append(df)
+    if not rows:
+        merged = pd.DataFrame()
+    else:
+        merged = pd.concat(rows, ignore_index=True)
+
+    lines: list[str] = []
+    lines.append("# Event Leaderboard")
+    lines.append("")
+    lines.append(f"Last refresh: {_utc_now()}.")
+    lines.append(
+        "Source: `data_layer/store/processed/leaderboard/binance/<SYMBOL>/<TF>.parquet`."
+    )
+    lines.append(
+        f"Ranking: top {TOP_K} (event_type, tf, horizon) cells by `sharpe_like`, "
+        f"requiring `count >= {MIN_COUNT_FOR_RANKING}`."
+    )
+    lines.append("")
+
+    if not merged.empty:
+        ranked = merged[merged["count"] >= MIN_COUNT_FOR_RANKING].copy()
+        ranked = ranked.dropna(subset=["sharpe_like"])
+        ranked = ranked.reindex(
+            ranked["sharpe_like"].abs().sort_values(ascending=False).index
+        ).head(TOP_K)
+        if ranked.empty:
+            lines.append("No event-cell met the minimum sample requirement.")
+        else:
+            lines.append(
+                "| rank | event_type | tf | horizon | n | mean fwd | hit>0 | sharpe | MFE/|MAE| |"
+            )
+            lines.append("|---|---|---|---|---|---|---|---|---|")
+            for i, r in enumerate(ranked.itertuples(index=False), 1):
+                hit = (
+                    f"{r.hit_rate_at_zero * 100:.0f}%"
+                    if pd.notna(r.hit_rate_at_zero) else "-"
+                )
+                lines.append(
+                    f"| {i} | {r.event_type} | {r.timeframe} | {r.horizon} | "
+                    f"{int(r.count)} | {_fmt_pct(r.mean_forward_return)} | {hit} | "
+                    f"{_fmt_ratio(r.sharpe_like)} | {_fmt_ratio(r.mfe_mae_ratio)} |"
+                )
+            lines.append("")
+
+    lines.append("## Caveats")
+    lines.append("")
+    lines.append(
+        "- Smoke window is 7d (5m) / 30d (1h). Sample sizes are intentionally tiny."
+    )
+    lines.append(
+        "- This is a descriptive scan, NOT a verdict. No hypothesis is generated."
+    )
+    lines.append(
+        "- Direction split (long-side vs short-side) is Phase 5+; current view is long-side only."
+    )
+
+    out = REPORTS / "leaderboards" / "latest_event_leaderboard.md"
+    _write_capped(out, lines)
+    print(f"[summaries] wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
 def refresh_all_summaries() -> int:
     refresh_universe_status()
     refresh_feature_catalog()
     refresh_regime_summary()
+    refresh_event_catalog()
+    refresh_outcome_summary()
+    refresh_event_leaderboard()
     return 0
 
 

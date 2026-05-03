@@ -2,10 +2,16 @@
 # Section 6. Event strength is recorded in absolute z-score units so
 # events of the same type are comparable across regimes.
 
-EV_FUND_FLIP: {}
+EV_FUND_FLIP:
+  # Sign change between consecutive funding settles. event_strength =
+  # abs(rate_new - rate_prev) in basis points (bp = 1e-4).
+  min_abs_rate_change_bp: 0.5
 
 EV_FUND_EXTREME:
+  # First cross of |funding_rate_zscore_30d| > 2 OR (when z
+  # insufficient_data) |funding_rate| >= 5 bp.
   zscore_abs_threshold: 2.0
+  fallback_abs_rate_bp: 5.0
 
 EV_PREMIUM_SPIKE:
   basis_zscore_24_threshold: 3.0
@@ -15,6 +21,9 @@ EV_PREMIUM_COMPRESSION:
   require_prior_premium: true
 
 EV_OI_SPIKE_UP:
+  # First cross of (oi_pct_change_1h > +3% AND oi_zscore_30d > 1).
+  # When oi_zscore_30d is NaN (insufficient_data), require pct gate
+  # only and tag context_regime accordingly.
   oi_pct_change_1h_min: 0.03
   oi_zscore_30d_min: 1.0
 
@@ -28,8 +37,14 @@ EV_LIQ_SHORT_CASCADE:
   liq_short_zscore_24_min: 3.0
 
 EV_VOL_BREAKOUT:
-  range_pct_pctile_30d: 99.0
+  # First cross of (range_pct >= rolling 99-pctile over 30d AND
+  # taker_quote_zscore_24 > 2). 5m smoke window is only 7d so the
+  # rolling window is reduced to bars_per_day * available_days, with
+  # min_periods set to bars_per_day * 3 to avoid early false positives.
+  range_pct_pctile: 99.0
   taker_quote_zscore_24_min: 2.0
+  rolling_history_days_target: 30
+  rolling_min_periods_days: 3
 
 EV_CROWD_FLIP:
   lsr_account_z_30d_high: 1.5
@@ -37,7 +52,16 @@ EV_CROWD_FLIP:
   flip_window_bars: 24
 
 EV_FUNDING_WINDOW_PRE:
+  # Informational. Bar where minutes_to_next_settle <= 30 (i.e.
+  # pre_funding_30m == 1). One event row per such bar.
   pre_settle_minutes: 30
+
+# Forward-outcome horizons per timeframe (Phase 4). Anchored on the
+# bar AFTER the event (no same-bar contamination). h+N means N bars
+# after the entry anchor.
+outcome_horizons:
+  5m: [1, 3, 12, 72]   # 5m, 15m, 1h, 6h
+  1h: [1, 3, 12, 24, 72] # 1h, 3h, 12h, 1d, 3d
 
 # Report / brief size policy. Applies to Phase 6+ outputs.
 # All Codex-readable markdown reports must obey these caps.

@@ -1,6 +1,6 @@
 # Universe Status
 
-Last refresh: 2026-05-03 12:48 UTC.
+Last refresh: 2026-05-03 12:58 UTC.
 
 ## Loaded series (binance, BTCUSDT)
 
@@ -21,9 +21,15 @@ Last refresh: 2026-05-03 12:48 UTC.
 - Funding rate: see `data_layer/reports/quality/latest_summary.md`.
 - Open Interest (5-min metrics): see `data_layer/reports/quality/latest_summary.md`.
 
+## Phase 4 outputs (binance, BTCUSDT)
+
+| timeframe | events rows | outcomes rows | leaderboard rows |
+|---|---|---|---|
+| 5m | 32 | 128 | 20 |
+| 1h | 46 | 230 | 20 |
+
 ## Pending phases
 
-- Phase 4 (events + outcomes + leaderboard): pending approval
 - Phase 5 (Bybit + OKX): pending approval
 - Phase 6 (hypothesis seed briefs): pending approval
 - Phase 7 (liquidations + book): deferred
