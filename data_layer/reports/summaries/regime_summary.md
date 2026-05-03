@@ -1,6 +1,6 @@
 # Regime Summary
 
-Last refresh: 2026-05-03 12:48 UTC.
+Last refresh: 2026-05-03 12:58 UTC.
 Source: `data_layer/store/processed/regimes/binance/<SYMBOL>/<TF>.parquet`.
 Thresholds: `data_layer/config/regimes.yaml` and `data_layer/process/regimes.py:THRESH`.
 

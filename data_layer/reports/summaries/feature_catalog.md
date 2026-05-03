@@ -1,6 +1,6 @@
 # Feature Catalog
 
-Last refresh: 2026-05-03 12:48 UTC.
+Last refresh: 2026-05-03 12:58 UTC.
 Source: `data_layer/store/processed/features/binance/<SYMBOL>/<TF>.parquet`.
 Defs in `data_layer/config/features.yaml` and `data_layer/process/features.py`.
 
