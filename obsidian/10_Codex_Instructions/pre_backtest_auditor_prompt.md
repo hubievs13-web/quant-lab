@@ -13,8 +13,9 @@ Default verdict is REJECT when evidence is weak, vague, or missing.
 
 Required reads:
 
-- `.codex/AGENTS.md` (Sections 4, 5, 6, 7, 10).
-- `obsidian/01_Rules/` in full.
+- `.codex/AGENTS.md` (Sections 3, 4, 5, 6, 7, 10).
+- `obsidian/01_Rules/` in full (especially
+  `02_Fee_Slippage_Model.md`).
 - `obsidian/wiki/decisions/decisions_index.md`.
 - `obsidian/wiki/decisions/rejected_pattern_blocklist.md`.
 - The candidate hypothesis at
@@ -39,18 +40,62 @@ counts as FAIL for the verdict.
 2. Market mechanism is mechanically specified, not just narrative.
 3. Required data is fully present in the current Data Layer.
 4. Cited Data Layer evidence exists, is quoted with a number, and
-   matches the path given in the hypothesis.
-5. Distinctness from every entry in
+   matches the path given in the hypothesis. The cited line MUST
+   include sample size n and a numeric pre-fee or net forward
+   return. A narrative summary without a numeric line FAILS this
+   check.
+5. **Profile match.** The hypothesis declares one of the
+   operating profiles defined in `.codex/AGENTS.md` Section 3
+   (Profile A-Maker, Profile A-Taker, Profile B, or another
+   profile explicitly added there). PASS only if the declared
+   profile is one of these and the hypothesis's stated frequency
+   and tier match the profile.
+6. **Pre-fee edge floor.** The expected pre-fee per-trade edge
+   from the cited evidence clears the floor for the declared tier
+   (Tier T >= 0.30 percent, Tier M >= 0.20 percent). PASS only if
+   the cited number is at or above the floor with a documented
+   margin, not by rounding.
+7. **Fee budget gate.** Compute annualized friction with the
+   declared profile values:
+
+   ```
+   notional_per_trade = starting_capital * margin_fraction * leverage
+   annual_friction    = trades_per_day * 365
+                        * notional_per_trade * round_trip_friction
+   ```
+
+   Use the friction number for the declared tier from
+   `01_Rules/02_Fee_Slippage_Model.md` (Tier T 0.0018, Tier M
+   0.0008). PASS only if `annual_friction / starting_capital <=
+   0.25`. Otherwise the strategy is structurally infeasible and
+   FAILS this check, regardless of expected edge.
+
+8. **Cross-symbol Pareto evidence.** For futures symbols within
+   the v1 universe (BTCUSDT and ETHUSDT), the cited evidence
+   either (a) shows positive net edge on both symbols at
+   comparable n, or (b) explicitly justifies why the hypothesis
+   targets only one symbol with a mechanism that does not exist
+   on the other. A single-symbol claim without justification
+   FAILS this check.
+
+9. Distinctness from every entry in
    `rejected_pattern_blocklist.md` and the rejected rows of
    `decisions_index.md` is articulated, not just asserted.
-6. Fees and slippage survival check shows margin above the
-   canonical round-trip friction floor in `obsidian/01_Rules/`.
-7. Lookahead-bias check enumerates each feature with its
-   timestamp relative to the decision bar. No leakage.
-8. Falsification criteria are pre-registered numeric thresholds,
-   not tunable knobs.
-9. Exact next validation step is a single concrete action and
-   does not require strategy code.
+10. Lookahead-bias check enumerates each feature with its
+    timestamp relative to the decision bar. No leakage.
+11. Falsification criteria are pre-registered numeric thresholds,
+    not tunable knobs.
+12. Free parameters are <= 3, listed by name, and each is
+    justified a priori (mechanism-derived, not from a parameter
+    sweep).
+13. Maker tier specifics (Tier M only). If the hypothesis is
+    Tier M, it explicitly references the adverse-selection rule
+    from `01_Rules/02_Fee_Slippage_Model.md` and states the
+    fallback policy (cancel vs. taker fallback) for unfilled
+    limits. A Tier M hypothesis that omits adverse selection
+    FAILS this check.
+14. Exact next validation step is a single concrete action and
+    does not require strategy code.
 
 ## Verdict
 
@@ -60,15 +105,16 @@ Pick exactly one of:
   UNVERIFIABLE; or the hypothesis matches a row in
   `rejected_pattern_blocklist.md`; or the cited Data Layer
   evidence does not numerically support the proposed edge above
-  fees and slippage. Default to REJECT when in doubt.
+  fees and slippage; or the fee budget gate is breached. Default
+  to REJECT when in doubt.
 - **REWORK** — All items are PASS in spirit, but one or two
   sections need tighter wording or one missing citation. List the
   exact deltas required. Engineering remains forbidden.
 - **ALLOW_ENGINEERING** — Every checklist item PASSES, the
   proposal is mechanically distinct from every rejected family,
-  the fees and slippage check has clear margin, and the
-  falsification criteria are unambiguous. Only this verdict
-  unlocks engineer mode.
+  the fees and slippage check has clear margin, the fee budget
+  gate is satisfied, and the falsification criteria are
+  unambiguous. Only this verdict unlocks engineer mode.
 
 Output the verdict on its own final line in the form:
 
@@ -84,7 +130,7 @@ VERDICT: ALLOW_ENGINEERING
   contradicts existing rejected mechanism families.
 - Never produce ALLOW_ENGINEERING based on narrative alone. There
   must be a quoted numeric line from a real Data Layer summary
-  that survives fees and slippage.
+  that survives fees and slippage AND clears the fee budget gate.
 - Do NOT write or modify strategy code. Do NOT call into
   `strategies/`, `data_layer/`, `results/`, `experiments_log.md`,
   or `obsidian/04_Backtests/`. Coding is forbidden unless the

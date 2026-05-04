@@ -6,6 +6,8 @@ created: YYYY-MM-DD
 mechanism_class: funding | oi | basis | lead_lag | orderflow | other
 symbols: [BTCUSDT, ETHUSDT]
 timeframe: 1m | 5m
+profile: A-Maker | A-Taker | B   # one of `.codex/AGENTS.md` Section 3 profiles
+execution_tier: M | T            # M for maker (limit + adverse-selection), T for taker (market)
 expected_trades_per_day: [low, high]
 free_parameters: [p1_name, p2_name, p3_name]   # at most 3
 ---
@@ -27,7 +29,34 @@ values.
 
 - Expected average pre-fee PnL per trade: X.XX percent.
 - Reasoning: ...
-- Must be >= 0.10 percent to pass the floor.
+- Floor for the declared execution tier (see
+  `obsidian/01_Rules/02_Fee_Slippage_Model.md`):
+  - Tier T: must be >= 0.30 percent;
+  - Tier M: must be >= 0.20 percent.
+- Cited Data Layer evidence (path + quoted numeric line):
+  - file: `data_layer/reports/...`
+  - line: "..."
+
+## 3b. Fee budget gate
+
+Show the arithmetic from
+`obsidian/01_Rules/02_Fee_Slippage_Model.md`:
+
+```
+notional_per_trade = starting_capital * margin_fraction * leverage
+annual_friction    = trades_per_day * 365
+                     * notional_per_trade * round_trip_friction
+ratio              = annual_friction / starting_capital
+```
+
+Profile values used:
+- starting_capital: ...
+- margin_fraction: ...
+- leverage: ...
+- trades_per_day: ...
+- round_trip_friction: 0.0018 (Tier T) or 0.0008 (Tier M)
+
+Result ratio: ... (must be <= 0.25 to pass).
 
 ## 4. Expected trade frequency
 

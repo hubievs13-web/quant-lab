@@ -37,13 +37,32 @@ Produce a checklist review in chat. Sections:
 1. Hypothesis review
    - Mechanism distinct from H0001/H0003/H0004/H0006? (pass/fail)
    - Free parameters <= 3? (pass/fail, list them)
-   - Expected pre-fee edge >= 0.10 percent per trade, justified? (pass/fail)
+   - Operating profile declared and matches Section 3 of
+     `.codex/AGENTS.md`? (pass/fail, name the profile)
+   - Expected pre-fee edge clears the floor for the declared
+     execution tier (Tier T >= 0.30 percent, Tier M >= 0.20
+     percent), with a quoted Data Layer line? (pass/fail)
+   - Fee budget gate satisfied: annual friction <= 25 percent of
+     starting capital? (pass/fail, show the arithmetic)
+   - Cited Data Layer evidence covers BTCUSDT and ETHUSDT (or
+     justifies single-symbol focus)? (pass/fail)
    - Expected trade count in falsification range? (pass/fail)
    - Data required actually available in QC Lean v17685? (pass/fail)
+   - If Tier M: adverse-selection rule from
+     `01_Rules/02_Fee_Slippage_Model.md` is referenced and the
+     unfilled-limit fallback policy is stated? (pass/fail)
 
 2. Code review
-   - Fee model matches AGENTS.md section 4? (pass/fail)
-   - Slippage buffer matches AGENTS.md section 4? (pass/fail)
+   - Fee model matches the declared tier in
+     `01_Rules/02_Fee_Slippage_Model.md`? (pass/fail)
+   - Slippage / maker-fill model matches the declared tier?
+     For Tier M, the adverse-selection rule MUST be implemented;
+     a naive limit-fill assumption FAILS. (pass/fail)
+   - Profile tag comment present at top of `main.py` (e.g.,
+     `# PROFILE: A-Maker`) and matches the hypothesis profile?
+     (pass/fail)
+   - `scripts/lint_strategy.py` passes on the generated
+     `main.py`? (pass/fail, paste the lint summary)
    - No same-bar close-to-close execution? (pass/fail)
    - Multi-asset signals strictly use past info? (pass/fail)
    - Indicator warm-up free of OOS data? (pass/fail)

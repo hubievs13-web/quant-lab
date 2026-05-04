@@ -1,6 +1,6 @@
 # MASTER_CONTEXT - Quant Lab
 
-Last updated: 2026-05-02
+Last updated: 2026-05-03
 
 ## 1. Mission
 
@@ -59,10 +59,14 @@ v17685
 2. Never claim PASS without all falsification criteria.
 3. Monte Carlo runs only after criteria 1-6 preliminary pass.
 4. Free parameters <= 3 per hypothesis.
-5. Fee/slippage assumption:
-   - Binance futures taker fee 0.04% per side;
-   - total round-trip friction around 0.18%.
-6. Pre-fee edge floor >= 0.10% per trade.
+5. Fee/slippage assumption (canonical: `obsidian/01_Rules/02_Fee_Slippage_Model.md`):
+   - Tier T (taker, market orders): 0.04% per side, total round-trip friction ~0.18%;
+   - Tier M (maker, limit orders with adverse-selection rule): 0.02% per side,
+     total round-trip friction ~0.08%.
+6. Pre-fee edge floor depends on declared tier (canonical: `01_Rules/02_Fee_Slippage_Model.md`):
+   - Tier T: >= 0.30% per trade;
+   - Tier M: >= 0.20% per trade.
+   The previous 0.10% figure is retired.
 7. No data leakage:
    - no future bars;
    - no same-bar close signal with same-close execution;
@@ -89,7 +93,8 @@ Criteria:
 
 4. Max Drawdown < 25%.
 
-5. Pre-fee average trade >= 0.10% per trade.
+5. Pre-fee average trade clears the floor for the declared tier:
+   Tier T >= 0.30% per trade, Tier M >= 0.20% per trade.
 
 6. Either:
    - Win Rate >= 50% IS and OOS;
@@ -185,7 +190,30 @@ Closed.
 ## 9. Current status
 
 Current phase:
-Engineer package created for H0008.
+Phase 2B - Codex pipeline refactor for Profile A-Maker (small-capital, maker-mostly).
+Engineer package for H0008 exists but predates the new rules and is non-conformant
+until regenerated.
+
+Pipeline changes (2026-05-03):
+- Pre-fee floor raised from 0.10% to 0.30% (Tier T) / 0.20% (Tier M).
+- New operating profiles (`.codex/AGENTS.md` Section 3): A-Maker (default for $200 live,
+  5-15 trades/day, maker), A-Taker ($200 live, 1-3 trades/day, taker),
+  B (>= $5000, 5-15 trades/day, taker).
+- Pre-backtest auditor adds three gates: profile match, fee budget
+  (annual_friction / starting_capital <= 25%), and cross-symbol Pareto evidence.
+- Researcher and hypothesis-factory prompts now require a quoted numeric
+  Data Layer line as evidence; narrative-only proposals are rejected.
+- New `strategies/_lib/`: canonical fee models (Tier T, Tier M),
+  Tier T slippage model, `MakerSignalGate` (Tier M adverse-selection proxy:
+  fill only on touch + next-bar adverse move >= 0.05%),
+  `DrawdownStop` (20% session-peak hard stop), per-trade and daily logger.
+  These are inlined byte-for-byte into a generated `main.py`; QC web IDE
+  remains single-file.
+- New `scripts/lint_strategy.py` validates a `main.py` offline before paste
+  into QuantConnect: profile tag, allowed imports, free-parameter count,
+  canonical class presence with rate match, no emoji, no dynamic attribute
+  access. Auditor must paste lint summary into the strategy README.
+- Tests under `tests/unit/` cover the new `_lib` modules and the linter.
 
 Next task:
 ChatGPT code review for `strategies/H0008_funding_premium_crowding_unwind/main.py`, supporting README/diagnostics, and `obsidian/03_Strategies/S0008_funding_premium_crowding_unwind.md`.

@@ -12,14 +12,16 @@ hypothesis per session. Producing two or more is a hard failure.
 
 Required reads before proposing:
 
-- `.codex/AGENTS.md` (Sections 4, 5, 6, 7, 10, 14).
-- `obsidian/01_Rules/` in full.
+- `.codex/AGENTS.md` (Sections 3, 4, 5, 6, 7, 10, 14).
+- `obsidian/01_Rules/` in full (especially
+  `02_Fee_Slippage_Model.md`).
 - `obsidian/wiki/decisions/decisions_index.md`.
 - `obsidian/wiki/decisions/rejected_pattern_blocklist.md`.
 - The targeted Data Layer summary under
-  `obsidian/wiki/summaries/` or `obsidian/08_Data_Notes/` that the
-  candidate edge depends on. If no matching summary exists, say so
-  and stop.
+  `obsidian/wiki/summaries/`, `obsidian/08_Data_Notes/`, or
+  `data_layer/reports/` that the candidate edge depends on. If no
+  matching summary exists or it does not contain a numeric line
+  supporting the edge, say so and stop.
 
 Acknowledge the rules in a bullet list before starting.
 
@@ -49,25 +51,50 @@ sections are an automatic stop.
    and explain in one paragraph why this proposal is mechanically
    distinct, not just re-parameterised. If you cannot articulate a
    distinct mechanism, stop.
-6. **Fees and slippage survival check.** Compute the minimum
-   per-trade gross edge required to survive the canonical
-   round-trip friction defined in `obsidian/01_Rules/` (currently
-   approximately 0.18 percent). State the assumed gross edge from
-   the Data Layer evidence and confirm it clears that floor with
-   margin. If it does not, stop.
-7. **Lookahead-bias check.** List every input feature and its
+6. **Operating profile.** Declare exactly one operating profile
+   from `.codex/AGENTS.md` Section 3 (Profile A-Maker, A-Taker,
+   B). Do not invent a profile. The chosen profile fixes the
+   starting capital, the target trades per day, the execution
+   tier (T or M), and the pre-fee edge floor.
+
+7. **Fees and slippage survival check.** Use the friction and
+   floor for the declared tier from
+   `obsidian/01_Rules/02_Fee_Slippage_Model.md` (Tier T friction
+   approximately 0.18 percent, floor 0.30 percent; Tier M
+   friction approximately 0.08 percent, floor 0.20 percent).
+   State the assumed gross edge from the Data Layer evidence and
+   confirm it clears the floor with margin. If it does not, stop.
+
+8. **Fee budget gate.** Show the arithmetic:
+
+   ```
+   notional_per_trade = starting_capital * margin_fraction * leverage
+   annual_friction    = trades_per_day * 365
+                        * notional_per_trade * round_trip_friction
+   ratio              = annual_friction / starting_capital
+   ```
+
+   The hypothesis is valid only if `ratio <= 0.25`. If the ratio
+   exceeds the budget, stop. Do not propose a structurally
+   infeasible strategy.
+9. **Lookahead-bias check.** List every input feature and its
    exact timestamp relative to the decision bar. Confirm every
    input is strictly available before the next-bar execution
    timestamp. Flag any rolling, regime, or aggregation feature
    that could leak forward.
-8. **Falsification criteria.** State the pre-registered numeric
-   thresholds that, if not met on the validation window, will
-   classify the hypothesis as FAIL. Use the framework in
-   `obsidian/01_Rules/`. Falsification must be a single-shot
-   decision, not a tunable knob.
-9. **Exact next validation step.** One sentence naming the next
-   single action: which Data Layer script to run, which summary
-   to regenerate, or which audit prompt to invoke. No code.
+10. **Falsification criteria.** State the pre-registered numeric
+    thresholds that, if not met on the validation window, will
+    classify the hypothesis as FAIL. Use the framework in
+    `obsidian/01_Rules/`. Falsification must be a single-shot
+    decision, not a tunable knob.
+11. **Maker tier specifics (only when Tier M).** Reference the
+    adverse-selection rule in
+    `obsidian/01_Rules/02_Fee_Slippage_Model.md` and state the
+    fallback policy for unfilled limits (cancel after N bars or
+    cross to taker with full Tier T friction).
+12. **Exact next validation step.** One sentence naming the next
+    single action: which Data Layer script to run, which summary
+    to regenerate, or which audit prompt to invoke. No code.
 
 Hard constraints:
 
