@@ -1,18 +1,18 @@
 # Event Catalog
 
-Last refresh: 2026-05-03 20:05 UTC.
+Last refresh: 2026-05-04 13:34 UTC.
 Source: `data_layer/store/processed/events/binance/<SYMBOL>/<TF>.parquet`.
 
 | event_type | 5m BTC | 5m ETH | 1h BTC | 1h ETH |
 |---|---|---|---|---|
-| EV_FUND_FLIP | 0 | 53 | 0 | 77 |
-| EV_FUND_EXTREME | 0 | 9 | 0 | 21 |
-| EV_OI_SPIKE_UP | 0 | 3 | 0 | 2 |
-| EV_OI_FLUSH | 0 | 4 | 0 | 1 |
-| EV_VOL_BREAKOUT | 0 | 98 | 0 | 35 |
-| EV_FUNDING_WINDOW_PRE | 0 | 264 | 0 | 175 |
-| EV_PREMIUM_SPIKE | 0 | 750 | 0 | 135 |
-| EV_PREMIUM_COMPRESSION | 0 | 542 | 0 | 75 |
+| EV_FUND_FLIP | 46 | 53 | 75 | 77 |
+| EV_FUND_EXTREME | 7 | 10 | 22 | 20 |
+| EV_OI_SPIKE_UP | 7 | 3 | 3 | 2 |
+| EV_OI_FLUSH | 3 | 4 | 0 | 1 |
+| EV_VOL_BREAKOUT | 81 | 98 | 34 | 39 |
+| EV_FUNDING_WINDOW_PRE | 261 | 261 | 174 | 174 |
+| EV_PREMIUM_SPIKE | 736 | 750 | 132 | 137 |
+| EV_PREMIUM_COMPRESSION | 564 | 537 | 71 | 75 |
 
 ## Notes
 
