@@ -64,25 +64,66 @@ explicitly in the strategy README and provide a concrete verification step
 the user can run in QuantConnect before relying on that assumption. Codex
 MUST NOT silently assume support.
 
+### Operating profiles
+
+Every hypothesis MUST declare an operating profile. The profile binds
+capital, frequency, and execution tier to the fee model floors in
+`obsidian/01_Rules/02_Fee_Slippage_Model.md`. Auditor rejects a strategy
+that does not match any profile.
+
+- Profile A-Maker (default for v1)
+  - Starting capital: USD 200.
+  - Target trades per day: 5 to 15.
+  - Execution tier: M (maker-mostly). Limit-order entries with the
+    adverse-selection rule from `01_Rules/02_Fee_Slippage_Model.md`.
+    Taker exits allowed for time stop or drawdown stop with full Tier T
+    friction on that leg.
+  - Required pre-fee average per-trade edge: >= 0.20 percent.
+  - Annualized friction budget: <= 25 percent of starting capital.
+
+- Profile A-Taker (allowed only when a clear high-edge mechanism exists)
+  - Starting capital: USD 200.
+  - Target trades per day: 1 to 3.
+  - Execution tier: T (taker, market orders).
+  - Required pre-fee average per-trade edge: >= 0.30 percent.
+  - Annualized friction budget: <= 25 percent of starting capital.
+
+- Profile B (paper or larger account, taker)
+  - Starting capital: USD 5000 or higher.
+  - Target trades per day: 5 to 15.
+  - Execution tier: T.
+  - Required pre-fee average per-trade edge: >= 0.30 percent.
+  - Annualized friction budget: <= 25 percent of starting capital.
+
+A hypothesis that does not satisfy the friction budget for its declared
+profile is structurally infeasible and is rejected before engineering.
+
 ---
 
 ## 4. Fee and slippage model
 
-Default model for all backtests in v1:
+The canonical fee, slippage, and pre-fee edge floor model lives in
+`obsidian/01_Rules/02_Fee_Slippage_Model.md`. Codex MUST treat that file
+as authoritative and re-read it on every task.
 
-- Taker fee: 0.04 percent per side.
-- Round-trip fee: 0.08 percent.
-- Additional slippage and market-impact buffer: the strategy must assume a
-  realistic total round-trip friction of approximately 0.18 percent.
-- If Codex uses a different value (higher or lower), it MUST state the
-  number, the reason, and the supporting evidence in the strategy README.
-  No silent changes.
+Summary (must match `01_Rules/02_Fee_Slippage_Model.md`):
 
-Pre-fee edge floor:
+- Tier T (taker, market orders): per-side fee 0.04 percent, total
+  round-trip friction approximately 0.18 percent.
+- Tier M (maker, limit orders with adverse-selection model): per-side
+  fee 0.02 percent, total round-trip friction approximately 0.08
+  percent. The adverse-selection rule defined in
+  `01_Rules/02_Fee_Slippage_Model.md` is REQUIRED in the backtest. No
+  maker rebate may be assumed.
+- Pre-fee edge floor: Tier T >= 0.30 percent per trade; Tier M >= 0.20
+  percent per trade. The previous 0.10 percent figure is retired because
+  it sat below round-trip friction.
+- Annualized friction budget: <= 25 percent of starting capital, per the
+  fee budget gate in `01_Rules/02_Fee_Slippage_Model.md`.
 
-- The strategy must expect pre-fee average edge of at least 0.10 percent
-  per trade. If the hypothesis cannot justify this floor a priori, Codex
-  MUST reject the hypothesis at the researcher stage and propose another.
+If Codex uses any value that differs from the canonical rules file, it
+MUST state the exact number, the reason, and the supporting evidence in
+the strategy README. No silent changes.
 
 ---
 
@@ -100,8 +141,11 @@ Codex must follow all of these without exception.
    threshold that is not a convention (timezone, bar interval) as a free
    parameter. If Codex needs more than 3, the hypothesis is too flexible
    and must be simplified or rejected.
-5. Use the fee and slippage model in section 4.
-6. Pre-fee average trade must be at least 0.10 percent per trade.
+5. Use the fee and slippage model in section 4 and
+   `obsidian/01_Rules/02_Fee_Slippage_Model.md`.
+6. Pre-fee average trade must clear the floor for the declared
+   execution tier: Tier T >= 0.30 percent per trade, Tier M >= 0.20
+   percent per trade.
 7. No data leakage:
    - No future bars.
    - No same-bar close signal executed at the same-bar close.
@@ -134,7 +178,9 @@ Required criteria:
    interpret together with trade count and stability.
 3. Out-of-sample net average trade greater than 0.
 4. Max drawdown less than 25 percent.
-5. Pre-fee average trade greater than or equal to 0.10 percent per trade.
+5. Pre-fee average trade clears the floor for the declared execution
+   tier: Tier T >= 0.30 percent per trade, Tier M >= 0.20 percent per
+   trade. See `obsidian/01_Rules/02_Fee_Slippage_Model.md`.
 6. Either win rate at least 50 percent in both IS and OOS, OR profit
    factor at least 1.25 with a stable payoff ratio. Do not reject a valid
    trend-following strategy only because win rate is below 50 percent if

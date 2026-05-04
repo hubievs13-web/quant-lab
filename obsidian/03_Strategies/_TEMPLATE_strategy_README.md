@@ -4,6 +4,8 @@ hypothesis: Hxxxx
 slug: short_slug
 created: YYYY-MM-DD
 status: draft   # draft | ready_for_qc | submitted | verdict_pending | closed
+profile: A-Maker | A-Taker | B
+execution_tier: M | T
 ---
 
 # Sxxxx — short_slug (implements Hxxxx)
@@ -24,13 +26,31 @@ Three sentences max. Copy from hypothesis note.
 
 ## 4. Fee and slippage assumptions
 
-- Taker fee per side: 0.04 percent.
-- Round-trip fee: 0.08 percent.
-- Total round-trip friction assumption: ~0.18 percent.
+Match the declared execution tier from
+`obsidian/01_Rules/02_Fee_Slippage_Model.md`:
+
+- Tier T: 0.04 percent fee per side, 0.05 percent slippage per
+  side, total round-trip friction ~0.18 percent. Pre-fee floor 0.30
+  percent.
+- Tier M: 0.02 percent fee per side, no rebate, adverse-selection
+  rule on limit fills. Total maker round-trip friction ~0.08
+  percent. Pre-fee floor 0.20 percent. Taker fallback (if any) on
+  unfilled limit accrues full Tier T friction on that leg.
 - Funding: [included / excluded]. If included, method.
 
-Any deviation from `obsidian/01_Rules/02_Fee_Slippage_Model.md` must be
-stated here with numbers and justification.
+Any deviation from `obsidian/01_Rules/02_Fee_Slippage_Model.md` must
+be stated here with numbers and justification.
+
+## 4b. Fee budget gate
+
+Quote the arithmetic from the hypothesis note showing
+`annual_friction / starting_capital <= 0.25`.
+
+## 4c. Lint
+
+Paste the output of
+`python scripts/lint_strategy.py strategies/Hxxxx_<slug>/main.py`
+here. The auditor verifies it ends in `LINT: PASS`.
 
 ## 5. Execution model
 

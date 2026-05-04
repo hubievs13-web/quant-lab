@@ -4,6 +4,8 @@ slug: short_slug
 created: YYYY-MM-DD
 mechanism_class: funding | oi | basis | lead_lag | orderflow | other
 symbols: [BTCUSDT, ETHUSDT]
+profile: A-Maker | A-Taker | B   # candidate profile (`.codex/AGENTS.md` Section 3)
+execution_tier: M | T
 ---
 
 # CExxxx — short_slug
@@ -17,6 +19,12 @@ creates this edge? Be specific. Do not write "market inefficiency".
 
 - Estimate (percent): ...
 - Reasoning from first principles: ...
+- Floor for the declared execution tier:
+  - Tier T: >= 0.30 percent;
+  - Tier M: >= 0.20 percent.
+- Quoted Data Layer evidence (path + numeric line):
+  - file: `data_layer/reports/...`
+  - line: "..."
 
 ## 3. Expected trade frequency per day per symbol
 
