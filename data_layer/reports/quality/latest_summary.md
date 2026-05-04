@@ -1,6 +1,6 @@
 # Data Layer Quality Report (latest)
 
-Generated: 2026-05-03 20:05 UTC
+Generated: 2026-05-04 13:33 UTC
 Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 ## OHLCV (per series)
@@ -16,15 +16,15 @@ Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 | symbol | rows received | rows expected (~) | first settle (ms) | last settle (ms) |
 |---|---|---|---|---|
-| BTCUSDT | 0 | 540 | None | None |
+| BTCUSDT | 543 | 540 | 1761955200001 | 1777564800000 |
 | ETHUSDT | 543 | 540 | 1761955200001 | 1777564800000 |
 
 ## Mark / Index price klines
 
 | symbol | series | mark rows | index rows |
 |---|---|---|---|
-| BTCUSDT | 5m | 25920 | 2016 |
-| BTCUSDT | 1h | 0 | 0 |
+| BTCUSDT | 5m | 25920 | 25920 |
+| BTCUSDT | 1h | 4320 | 4320 |
 | ETHUSDT | 5m | 25920 | 25920 |
 | ETHUSDT | 1h | 4320 | 4320 |
 
@@ -32,8 +32,8 @@ Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 | symbol | rows received | max gap (minutes) | first ts (ms) | last ts (ms) |
 |---|---|---|---|---|
-| BTCUSDT | 0 | - | None | None |
-| ETHUSDT | 8640 | 5.0 | 1775174700000 | 1777766400000 |
+| BTCUSDT | 8640 | 5.0 | 1775261100000 | 1777852800000 |
+| ETHUSDT | 8640 | 5.0 | 1775261100000 | 1777852800000 |
 
 ## Notes
 
