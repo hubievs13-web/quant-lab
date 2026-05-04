@@ -34,6 +34,7 @@ SUBCOMMANDS: dict[str, str] = {
     "fetch-binance-validation": "Fetch Binance BTCUSDT + ETHUSDT validation windows.",
     "rebuild-validation": "Full rebuild for Binance BTCUSDT + ETHUSDT validation.",
     "quality-validation": "Emit quality report for Binance BTCUSDT + ETHUSDT validation.",
+    "stability-validation": "Walk-forward + permutation tests for BTCUSDT + ETHUSDT outcome cells.",
     "refresh-summaries": "Regenerate reports/summaries/* and reports/leaderboards/*.",
     "fetch": "Generic fetch (Phase 5+).",
     "rebuild": "Generic rebuild (Phase 5+).",
@@ -107,6 +108,42 @@ def _run_quality_validation() -> int:
     return 0
 
 
+def _run_stability_validation() -> int:
+    from data_layer.process.stability import (
+        N_FOLDS,
+        N_PERMS,
+        run_stability_validation,
+    )
+
+    repo_root = Path(__file__).resolve().parents[2]
+    store_root = repo_root / "data_layer" / "store"
+    results = run_stability_validation(
+        repo_root=repo_root,
+        store_root=store_root,
+        symbols=["BTCUSDT", "ETHUSDT"],
+        timeframes=["5m", "1h"],
+        n_folds=N_FOLDS,
+        n_perms=N_PERMS,
+    )
+    print(
+        "[stability] wrote data_layer/store/processed/stability/binance/<SYMBOL>/<TF>__{walk_forward,permutation}.parquet"
+    )
+    for (symbol, tf), result in results.items():
+        wf_n = 0 if result.walk_forward.empty else int(
+            (result.walk_forward["verdict"] == "STABLE").sum()
+        )
+        wf_total = 0 if result.walk_forward.empty else int(len(result.walk_forward))
+        pm_n = 0 if result.permutation.empty else int(
+            (result.permutation["verdict"] == "PASS").sum()
+        )
+        pm_total = 0 if result.permutation.empty else int(len(result.permutation))
+        print(
+            f"  {symbol} {tf}: walk_forward STABLE={wf_n}/{wf_total} "
+            f"permutation PASS={pm_n}/{pm_total}"
+        )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -133,6 +170,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_quality_smoke()
     if args.cmd == "quality-validation":
         return _run_quality_validation()
+    if args.cmd == "stability-validation":
+        return _run_stability_validation()
     if args.cmd == "build-features-smoke":
         from data_layer.process.features import build_features_smoke
 

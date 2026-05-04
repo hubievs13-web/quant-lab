@@ -351,6 +351,99 @@ def refresh_pareto_validation() -> int:
     return 0
 
 
+def _load_stability() -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Load combined walk-forward and permutation parquets across
+    symbols / timeframes. Returns (walk_forward_df, permutation_df).
+    """
+    base = STORE_ROOT / "processed" / "stability" / "binance"
+    wf_rows: list[pd.DataFrame] = []
+    pm_rows: list[pd.DataFrame] = []
+    for symbol in SYMBOLS:
+        for tf in TIMEFRAMES:
+            wf_path = base / symbol / f"{tf}__walk_forward.parquet"
+            pm_path = base / symbol / f"{tf}__permutation.parquet"
+            if wf_path.exists():
+                wf_rows.append(pd.read_parquet(wf_path))
+            if pm_path.exists():
+                pm_rows.append(pd.read_parquet(pm_path))
+    wf = pd.concat(wf_rows, ignore_index=True) if wf_rows else pd.DataFrame()
+    pm = pd.concat(pm_rows, ignore_index=True) if pm_rows else pd.DataFrame()
+    return wf, pm
+
+
+def refresh_walk_forward_summary() -> int:
+    wf, _ = _load_stability()
+    lines = ["# Walk-Forward Stability", "", f"Last refresh: {_utc_now()}.",
+             "Splits each (symbol, tf, event_type, horizon) cell with "
+             f"`n >= {PARETO_MIN_N}` chronologically into 3 folds and reports "
+             "per-fold net after taker (Tier T) and maker (Tier M) friction. "
+             "A cell is `STABLE` if every fold's net has the same sign as "
+             "the full-sample net.", ""]
+    if wf.empty:
+        lines.append("No stability data available. Run `python -m data_layer.scripts.cli stability-validation`.")
+    else:
+        eligible = wf[wf["n_complete"] >= PARETO_MIN_N].copy()
+        # Top 20 ranked by maker net (descending) so the most attractive
+        # cells under Profile A-Maker surface first.
+        eligible = eligible.sort_values(
+            ["full_net_maker", "n_complete"], ascending=[False, False]
+        ).head(20)
+        lines += [
+            f"Showing top 20 cells by `full_net_maker` (out of {int((wf['n_complete'] >= PARETO_MIN_N).sum())} with `n >= {PARETO_MIN_N}`).",
+            "",
+            "| symbol | tf | event | h | n | net T | net M | T sign-stable | M sign-stable |",
+            "|---|---|---|---|---|---|---|---|---|",
+        ]
+        for _, r in eligible.iterrows():
+            ev = str(r["event_type"]).replace("EV_", "")
+            t_stable = "yes" if bool(r["sign_stable"]) else f"{int(r['folds_same_sign'])}/3"
+            m_stable = "yes" if bool(r["sign_stable_maker"]) else f"{int(r['folds_same_sign_maker'])}/3"
+            lines.append(
+                f"| {r['symbol']} | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"{int(r['n_complete'])} | {_fmt_pct(r['full_net'])} | "
+                f"{_fmt_pct(r['full_net_maker'])} | {t_stable} | {m_stable} |"
+            )
+    out = REPORTS / "summaries" / "walk_forward.md"
+    _write_capped(out, lines)
+    print(f"[summaries] wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
+def refresh_permutation_summary() -> int:
+    _, pm = _load_stability()
+    lines = ["# Permutation Test", "", f"Last refresh: {_utc_now()}.",
+             "Bootstrap test: for each cell with `n >= " f"{PARETO_MIN_N}` we draw 1000 random samples of the "
+             "same size from the underlying bar-level forward-return universe at the matching horizon "
+             "and compute the two-tailed p-value `(1 + #{|perm_mean| >= |obs_mean|}) / (n_perms + 1)`. "
+             "A cell is `PASS` when `p_value <= 0.05`.", ""]
+    if pm.empty:
+        lines.append("No stability data available. Run `python -m data_layer.scripts.cli stability-validation`.")
+    else:
+        eligible = pm[pm["n_complete"] >= PARETO_MIN_N].copy()
+        # Top 20 ranked by p_value ascending (most significant first).
+        eligible = eligible.sort_values(["p_value", "n_complete"], ascending=[True, False]).head(20)
+        n_pass = int((pm["verdict"] == "PASS").sum())
+        n_total = int((pm["n_complete"] >= PARETO_MIN_N).sum())
+        lines += [
+            f"Showing top 20 cells by p-value (out of {n_total}; {n_pass} cells PASS at p<=0.05).",
+            "",
+            "| symbol | tf | event | h | n | obs net T | obs net M | p-value | verdict |",
+            "|---|---|---|---|---|---|---|---|---|",
+        ]
+        for _, r in eligible.iterrows():
+            ev = str(r["event_type"]).replace("EV_", "")
+            p = "-" if pd.isna(r["p_value"]) else f"{r['p_value']:.3f}"
+            lines.append(
+                f"| {r['symbol']} | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"{int(r['n_complete'])} | {_fmt_pct(r['obs_net'])} | "
+                f"{_fmt_pct(r['obs_net_maker'])} | {p} | {r['verdict']} |"
+            )
+    out = REPORTS / "summaries" / "permutation_test.md"
+    _write_capped(out, lines)
+    print(f"[summaries] wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
 def refresh_all_summaries() -> int:
     refresh_universe_status()
     refresh_feature_catalog()
@@ -359,6 +452,8 @@ def refresh_all_summaries() -> int:
     refresh_outcome_summary()
     refresh_event_leaderboard()
     refresh_pareto_validation()
+    refresh_walk_forward_summary()
+    refresh_permutation_summary()
     return 0
 
 

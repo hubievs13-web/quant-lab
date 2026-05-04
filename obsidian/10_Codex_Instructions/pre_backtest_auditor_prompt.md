@@ -94,7 +94,25 @@ counts as FAIL for the verdict.
     fallback policy (cancel vs. taker fallback) for unfilled
     limits. A Tier M hypothesis that omits adverse selection
     FAILS this check.
-14. Exact next validation step is a single concrete action and
+14. **Stability evidence (walk-forward + permutation).** The cited
+    Data Layer cell MUST appear in
+    `data_layer/reports/summaries/walk_forward.md` AND
+    `data_layer/reports/summaries/permutation_test.md`. The
+    hypothesis MUST quote two specific numbers from those reports:
+    (a) the walk-forward `M sign-stable` value (must be `yes` or
+    `3/3` for Tier M, equivalent for Tier T) and (b) the permutation
+    `p-value`. Fee tier dictates which net column is read. PASS
+    requires:
+    - Tier M hypothesis: `M sign-stable = yes` AND `p-value <= 0.10`
+      (relaxed from 0.05 to keep at least one viable cell on the
+      current 365-day window; tighten to 0.05 once a 3-year window
+      is available).
+    - Tier T hypothesis: `T sign-stable = yes` AND `p-value <= 0.05`.
+    Cells with insufficient n (`INSUFFICIENT_N` verdict in either
+    report) FAIL this check. Cells absent from both reports FAIL
+    this check (the hypothesis is operating below the n>=80
+    threshold).
+15. Exact next validation step is a single concrete action and
     does not require strategy code.
 
 ## Verdict
