@@ -1,6 +1,6 @@
 # Event Leaderboard
 
-Last refresh: 2026-05-04 15:05 UTC.
+Last refresh: 2026-05-04 15:11 UTC.
 Top 12 cells by `|sharpe_like|`, requiring `count >= 30`.
 
 | rank | symbol | tf | event | h | n | mean fwd | net | hit | MFE/|MAE| |

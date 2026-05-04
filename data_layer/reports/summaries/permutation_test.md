@@ -1,6 +1,6 @@
 # Permutation Test
 
-Last refresh: 2026-05-04 15:05 UTC.
+Last refresh: 2026-05-04 15:11 UTC.
 Bootstrap test: for each cell with `n >= 80` we draw 1000 random samples of the same size from the underlying bar-level forward-return universe at the matching horizon and compute the two-tailed p-value `(1 + #{|perm_mean| >= |obs_mean|}) / (n_perms + 1)`. A cell is `PASS` when `p_value <= 0.05`.
 
 Showing top 20 cells by p-value (out of 85; 3 cells PASS at p<=0.05).
