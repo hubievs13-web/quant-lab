@@ -37,6 +37,21 @@ values.
   - file: `data_layer/reports/...`
   - line: "..."
 
+## 3a. Stability evidence (walk-forward + permutation)
+
+Quote two specific numbers tied to the same (symbol, timeframe,
+event_type, horizon) cell as the leaderboard citation above. If
+either report does not contain the cell, the hypothesis is below
+the n>=80 stability threshold and cannot pass the auditor.
+
+- file: `data_layer/reports/summaries/walk_forward.md`
+- T sign-stable: ... (must be `yes` for Tier T)
+- M sign-stable: ... (must be `yes` for Tier M)
+- file: `data_layer/reports/summaries/permutation_test.md`
+- p-value: ... (Tier T requires `<= 0.05`, Tier M requires
+  `<= 0.10` while only 365 days are available)
+- verdict: ... (must be `PASS` for Tier T)
+
 ## 3b. Fee budget gate
 
 Show the arithmetic from

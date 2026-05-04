@@ -1,6 +1,6 @@
 # MASTER_CONTEXT - Quant Lab
 
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 ## 1. Mission
 
@@ -214,6 +214,45 @@ Pipeline changes (2026-05-03):
   canonical class presence with rate match, no emoji, no dynamic attribute
   access. Auditor must paste lint summary into the strategy README.
 - Tests under `tests/unit/` cover the new `_lib` modules and the linter.
+
+Data layer expansion (2026-05-04):
+- Validation window widened from 90 / 180 / 30 days to 365 days uniformly
+  (`fetch.py` constants and `universe.yaml` history_window). BTCUSDT and
+  ETHUSDT now both have 1095 funding rows, 105117 OI rows, 105120 OHLCV /
+  mark / index 5m rows, 8760 1h rows.
+- New `data_layer/process/stability.py`: walk-forward (3 chronological
+  folds) + permutation test (1000 random samples from the same-horizon
+  bar-return universe) for every (symbol, tf, event_type, horizon) cell
+  with n >= 80. Outputs both Tier T and Tier M nets so the contribution
+  of Profile A-Maker is visible per cell.
+- New CLI command: `python -m data_layer.scripts.cli stability-validation`.
+- New summaries (cap 5KB each): `walk_forward.md`, `permutation_test.md`.
+  `outcome_summary.md` now caps to top-30 cells by |net| with a footer
+  noting total cells (was hitting the 5KB budget on the 365-day window).
+- Auditor and researcher prompts updated to require quoting one number
+  from each new report. Tier T requires `T sign-stable = yes` AND
+  `p <= 0.05`; Tier M requires `M sign-stable = yes` AND `p <= 0.10`
+  (the 0.10 is transitional while only 365 days are available).
+- Hypothesis template gains section "3a. Stability evidence".
+
+Honest empirical state on 365-day window:
+- Pareto cross-symbol gate: zero RESEARCH CANDIDATEs. Best joint cell is
+  EV_OI_SPIKE_UP at 1h h+72 with BTC n=8 / ETH n=20 (both below n>=80).
+- 85 cells have n>=80. Two have positive Tier T net: ETHUSDT 1h
+  FUND_FLIP h+72 (+0.89%, sign-unstable across folds) and ETHUSDT 1h
+  VOL_BREAKOUT h+72 (+0.50%, sign-unstable). Neither has a BTC twin.
+- Three cells PASS the permutation test at p<=0.05 (ETHUSDT 5m
+  VOL_BREAKOUT h+72 p=0.032; BTCUSDT 5m PREMIUM_COMPRESSION h+1
+  p=0.017; BTCUSDT 5m VOL_BREAKOUT h+72 p=0.006). All three have
+  negative Tier T net; they are statistically real "events predict
+  worse than random" signals, i.e. potential filters or fade-the-event
+  setups, not directly tradable longs.
+- Under Tier M friction (0.10%), exactly one cell passes walk-forward
+  sign stability AND has positive net: BTCUSDT 1h FUND_FLIP h+24
+  (n=104, full_mean=+0.30%, full_net_maker=+0.20%, p-value 0.159).
+  This is the single Profile A-Maker candidate visible at the 365-day
+  window; it would need the Tier M permutation threshold to relax to
+  ~0.20 to clear the auditor.
 
 Next task:
 ChatGPT code review for `strategies/H0008_funding_premium_crowding_unwind/main.py`, supporting README/diagnostics, and `obsidian/03_Strategies/S0008_funding_premium_crowding_unwind.md`.

@@ -1,6 +1,6 @@
 # Outcome Summary
 
-Last refresh: 2026-05-04 14:41 UTC.
+Last refresh: 2026-05-04 15:05 UTC.
 Rows shown only when `n >= 80`. Showing top 30 cells by |net| out of 85; the full table is in `data_layer/store/processed/leaderboard/`.
 
 | symbol | tf | event | h | n | fwd | net | hit | MFE/|MAE| |

@@ -23,6 +23,8 @@ Then:
    - `data_layer/reports/summaries/event_catalog.md`
    - `data_layer/reports/summaries/outcome_summary.md`
    - `data_layer/reports/summaries/pareto_validation.md`
+   - `data_layer/reports/summaries/walk_forward.md`
+   - `data_layer/reports/summaries/permutation_test.md`
    - `data_layer/reports/quality/latest_summary.md`
 
 2. From the leaderboard, select rows that satisfy ALL of:
@@ -72,7 +74,15 @@ Then:
    - the explicit Data Layer evidence path and quoted line that
      supports the edge,
    - the fee budget gate arithmetic showing
-     `annual_friction / starting_capital <= 0.25`.
+     `annual_friction / starting_capital <= 0.25`,
+   - the walk-forward `T sign-stable` / `M sign-stable` value (per
+     declared tier) quoted from
+     `data_layer/reports/summaries/walk_forward.md`,
+   - the permutation `p-value` quoted from
+     `data_layer/reports/summaries/permutation_test.md`. Tier T
+     requires `p <= 0.05` AND `T sign-stable = yes`; Tier M
+     requires `p <= 0.10` AND `M sign-stable = yes` (transitional
+     while only 365 days are available).
 
 8. Do not write strategy code in this mode.
 
