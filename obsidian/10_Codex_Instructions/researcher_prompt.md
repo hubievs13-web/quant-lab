@@ -36,17 +36,25 @@ Then:
    - `data_layer/reports/summaries/permutation_test.md`
    - `data_layer/reports/quality/latest_summary.md`
 
-2. From the leaderboard, select rows that satisfy ALL of:
+2. From the leaderboard and `research_candidates.md`, select rows
+   that satisfy ALL of:
    - sample size n >= 80,
-   - net forward return after canonical friction is positive on
-     BOTH BTCUSDT and ETHUSDT (or the row explicitly justifies
-     single-symbol focus),
+   - the row appears in `research_candidates.md` (any of the four
+     long/fade x T/M sections, or the cross-symbol section); cells
+     absent from that file FAIL the auditor's stability gate and
+     must not be proposed,
+   - declared `direction` matches the section the row appears in:
+     `direction: long` for a Long section (positive net), or
+     `direction: fade` for a Fade section (reliably *negative* net
+     where the strategy will trade *against* the event),
    - the row is not on a horizon longer than the declared profile
      allows (Profile A-Maker and A-Taker target intraday
-     holdings),
-   - the implied pre-fee per-trade edge clears the floor for the
-     declared execution tier (Tier T >= 0.30 percent, Tier M >=
-     0.20 percent) with a documented margin.
+     holdings; horizons of `h+24` or longer typically violate
+     "5-15 trades/day"),
+   - the implied pre-fee per-trade edge magnitude (`|net| + fee`
+     for the relevant tier) clears the floor for the declared
+     execution tier (Tier T >= 0.30 percent, Tier M >= 0.20
+     percent) with a documented margin.
 
 3. If zero rows clear all four filters, return one of:
    - `no candidate this session: leaderboard does not yield a
@@ -78,6 +86,7 @@ Then:
    - operating profile (one of the profiles in
      `.codex/AGENTS.md` Section 3),
    - execution tier (T or M),
+   - direction (`long` or `fade`),
    - target trades per day,
    - expected pre-fee per-trade edge,
    - the explicit Data Layer evidence path and quoted line that
@@ -92,6 +101,10 @@ Then:
      requires `p <= 0.05` AND `T sign-stable = yes`; Tier M
      requires `p <= 0.10` AND `M sign-stable = yes` (transitional
      while only 365 days are available).
+   - the section name in
+     `data_layer/reports/summaries/research_candidates.md` where
+     the cell appears (e.g. "Tier M long candidates", "Tier M fade
+     candidates"). Direction must match the section.
 
 8. Do not write strategy code in this mode.
 

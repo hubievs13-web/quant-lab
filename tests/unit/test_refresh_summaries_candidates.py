@@ -86,14 +86,20 @@ def test_research_candidates_writes_empty_when_no_pass(tmp_path, monkeypatch):
     rc = rs.refresh_research_candidates_summary()
     assert rc == 0
     out = (tmp_path / "reports" / "summaries" / "research_candidates.md").read_text()
-    assert "## Tier T single-symbol candidates" in out
-    assert "## Tier M single-symbol candidates" in out
-    # The cell does not pass either tier (p=0.30 > 0.10), so both
-    # single-symbol sections must say None.
-    tier_t_block = out.split("## Tier T single-symbol")[1].split("## Tier M")[0]
-    tier_m_block = out.split("## Tier M single-symbol")[1]
-    assert "None" in tier_t_block
-    assert "None" in tier_m_block
+    assert "## Tier T long candidates" in out
+    assert "## Tier M long candidates" in out
+    assert "## Tier T fade candidates" in out
+    assert "## Tier M fade candidates" in out
+    # The cell does not pass either tier (p=0.30 > 0.10), so all four
+    # sections must say None.
+    for header in (
+        "## Tier T long candidates",
+        "## Tier M long candidates",
+        "## Tier T fade candidates",
+        "## Tier M fade candidates",
+    ):
+        block = out.split(header)[1].split("## ", 1)[0] if "## " in out.split(header)[1] else out.split(header)[1]
+        assert "None" in block
 
 
 def test_research_candidates_lists_tier_m_pass(tmp_path, monkeypatch):
@@ -105,12 +111,37 @@ def test_research_candidates_lists_tier_m_pass(tmp_path, monkeypatch):
     _seed_stability(tmp_path, btc_5m_wf=btc_wf, btc_5m_pm=btc_pm)
     rs.refresh_research_candidates_summary()
     out = (tmp_path / "reports" / "summaries" / "research_candidates.md").read_text()
-    tier_m_block = out.split("## Tier M single-symbol")[1]
-    assert "BTCUSDT" in tier_m_block
-    assert "DEMO" in tier_m_block
-    # Tier T section must remain empty because permutation fails 0.05.
-    tier_t_block = out.split("## Tier T single-symbol")[1].split("## Tier M")[0]
-    assert "None" in tier_t_block
+    # The cell appears in the Tier M long section and nowhere else.
+    tier_m_long = out.split("## Tier M long candidates")[1].split("## ")[0]
+    tier_t_long = out.split("## Tier T long candidates")[1].split("## ")[0]
+    tier_m_fade = out.split("## Tier M fade candidates")[1].split("## ")[0]
+    assert "BTCUSDT" in tier_m_long
+    assert "DEMO" in tier_m_long
+    assert "None" in tier_t_long
+    assert "None" in tier_m_fade
+
+
+def test_research_candidates_lists_fade_when_negative_net(tmp_path, monkeypatch):
+    # Cell with full_mean = -0.40 (so full_net = -0.58, full_net_maker
+    # = -0.50), sign-stable in both directions, p=0.01 (passes both
+    # Tier T 0.05 and Tier M 0.10 thresholds). Must surface in
+    # Tier T fade and Tier M fade sections (not in any long section).
+    btc_wf = pd.DataFrame([_wf_row("BTCUSDT", 150, -0.40, True, True)])
+    btc_pm = pd.DataFrame([_pm_row("BTCUSDT", 150, -0.40, p=0.01)])
+    _patch_paths(monkeypatch, tmp_path)
+    _seed_stability(tmp_path, btc_5m_wf=btc_wf, btc_5m_pm=btc_pm)
+    rs.refresh_research_candidates_summary()
+    out = (tmp_path / "reports" / "summaries" / "research_candidates.md").read_text()
+    tier_t_long = out.split("## Tier T long candidates")[1].split("## ")[0]
+    tier_m_long = out.split("## Tier M long candidates")[1].split("## ")[0]
+    tier_t_fade = out.split("## Tier T fade candidates")[1].split("## ")[0]
+    tier_m_fade = out.split("## Tier M fade candidates")[1].split("## ")[0]
+    assert "None" in tier_t_long
+    assert "None" in tier_m_long
+    assert "BTCUSDT" in tier_t_fade
+    assert "BTCUSDT" in tier_m_fade
+    assert "DEMO" in tier_t_fade
+    assert "DEMO" in tier_m_fade
 
 
 def test_research_candidates_cross_symbol_section(tmp_path, monkeypatch):
@@ -131,4 +162,4 @@ def test_research_candidates_cross_symbol_section(tmp_path, monkeypatch):
     cross_block = out.split("## Cross-symbol Pareto")[1].split("## Tier T")[0]
     assert "BTC n" in cross_block  # header rendered
     assert "DEMO" in cross_block  # event surfaced
-    assert "| T | 5m | DEMO | h+12 |" in cross_block
+    assert "| T | long | 5m | DEMO | h+12 |" in cross_block
