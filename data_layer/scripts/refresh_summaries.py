@@ -243,16 +243,38 @@ def refresh_event_catalog() -> int:
     return 0
 
 
+OUTCOME_SUMMARY_TOP_K = 30
+
+
 def refresh_outcome_summary() -> int:
     lb = _load_leaderboards()
-    lines = ["# Outcome Summary", "", f"Last refresh: {_utc_now()}.",
-             f"Rows shown only when `n >= {PARETO_MIN_N}` to keep the report compact and aligned with Pareto checks.",
-             "", "| symbol | tf | event | h | n | fwd | net | hit | MFE/|MAE| |",
-             "|---|---|---|---|---|---|---|---|---|"]
+    lines = ["# Outcome Summary", "", f"Last refresh: {_utc_now()}."]
     if lb.empty:
-        lines.append("| - | - | - | - | 0 | - | - | - | - |")
+        lines += [
+            f"Rows shown only when `n >= {PARETO_MIN_N}` to keep the report compact and aligned with Pareto checks.",
+            "", "| symbol | tf | event | h | n | fwd | net | hit | MFE/|MAE| |",
+            "|---|---|---|---|---|---|---|---|---|",
+            "| - | - | - | - | 0 | - | - | - | - |",
+        ]
     else:
-        shown = lb[lb["count"] >= PARETO_MIN_N].sort_values(["symbol", "timeframe", "_h", "event_type"])
+        shown_all = lb[lb["count"] >= PARETO_MIN_N]
+        total = len(shown_all)
+        # Rank by absolute net edge after fees so the most extreme cells
+        # surface first, then fall back to deterministic key order on ties.
+        if not shown_all.empty:
+            shown = shown_all.copy()
+            shown["_abs_net"] = shown["net_after_fee"].abs()
+            shown = shown.sort_values(
+                by=["_abs_net", "symbol", "timeframe", "_h", "event_type"],
+                ascending=[False, True, True, True, True],
+            ).head(OUTCOME_SUMMARY_TOP_K)
+        else:
+            shown = shown_all
+        lines += [
+            f"Rows shown only when `n >= {PARETO_MIN_N}`. Showing top {OUTCOME_SUMMARY_TOP_K} cells by |net| out of {total}; the full table is in `data_layer/store/processed/leaderboard/`.",
+            "", "| symbol | tf | event | h | n | fwd | net | hit | MFE/|MAE| |",
+            "|---|---|---|---|---|---|---|---|---|",
+        ]
         if shown.empty:
             lines.append("| - | - | - | - | 0 | - | - | - | - |")
         else:

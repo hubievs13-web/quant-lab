@@ -33,6 +33,19 @@ def _parse_human_ts_to_ms(s: str) -> int:
     return int(t.timestamp() * 1000)
 
 
+def _maybe_float(s: str) -> float:
+    """Parse a CSV cell that may be empty for sparse Binance metrics rows.
+
+    Empty / whitespace cells are treated as NaN (Binance occasionally
+    emits empty `count_*` / `sum_*` columns, particularly on early-day
+    rows where ratios are not yet computed).
+    """
+    s = s.strip()
+    if not s:
+        return float("nan")
+    return float(s)
+
+
 def parse_metrics_csv(rows: list[list[str]], symbol: str) -> pa.Table:
     if rows and rows[0] and rows[0][0] == "create_time":
         rows = rows[1:]
@@ -47,12 +60,12 @@ def parse_metrics_csv(rows: list[list[str]], symbol: str) -> pa.Table:
         if not row or len(row) < 8:
             continue
         ts.append(_parse_human_ts_to_ms(row[0]))
-        oi_base.append(float(row[2]))
-        oi_q.append(float(row[3]))
-        lsr_top_acc.append(float(row[4]))
-        lsr_top_pos.append(float(row[5]))
-        lsr_account.append(float(row[6]))
-        taker_ratio.append(float(row[7]))
+        oi_base.append(_maybe_float(row[2]))
+        oi_q.append(_maybe_float(row[3]))
+        lsr_top_acc.append(_maybe_float(row[4]))
+        lsr_top_pos.append(_maybe_float(row[5]))
+        lsr_account.append(_maybe_float(row[6]))
+        taker_ratio.append(_maybe_float(row[7]))
     n = len(ts)
     return pa.Table.from_arrays(
         [

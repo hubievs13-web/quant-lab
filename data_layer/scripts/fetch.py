@@ -1,13 +1,18 @@
 """Binance validation fetcher.
 
 Targets: Binance BTCUSDT / ETHUSDT.
-- OHLCV 5m for the last 90 complete UTC days
-- OHLCV 1h for the last 180 complete UTC days
-- Mark / index price klines (5m for 90d, 1h for 180d)
-- Funding rate (monthly zips covering the last 180 complete UTC days)
-- OI / metrics 5-minute history for the last 30 complete UTC days
+- OHLCV 5m for the last 365 complete UTC days
+- OHLCV 1h for the last 365 complete UTC days
+- Mark / index price klines (5m and 1h for 365d)
+- Funding rate (monthly zips covering the last 365 complete UTC days)
+- OI / metrics 5-minute history for the last 365 complete UTC days
 
 All bulk data is written under `data_layer/store/` which is gitignored.
+
+Window widened from 90/180/30 to 365 days uniformly so the cross-symbol
+Pareto evidence gate from `obsidian/01_Rules/02_Fee_Slippage_Model.md`
+and `pre_backtest_auditor_prompt.md` has enough samples (n>=80) to give
+meaningful verdicts. See `data_layer/config/universe.yaml`.
 """
 from __future__ import annotations
 
@@ -27,11 +32,13 @@ STORE_ROOT = REPO_ROOT / "data_layer" / "store"
 SYMBOLS = ("BTCUSDT", "ETHUSDT")
 
 
-# Default smoke windows (overridable for unit tests).
-DAYS_5M = 90
-DAYS_1H = 180
-DAYS_FUNDING = 180
-DAYS_OI = 30
+# Default validation windows (overridable for unit tests / smoke).
+# Values must stay in sync with `data_layer/config/universe.yaml`
+# `history_window` keys for documentation purposes.
+DAYS_5M = 365
+DAYS_1H = 365
+DAYS_FUNDING = 365
+DAYS_OI = 365
 
 
 def fetch_binance_symbol(

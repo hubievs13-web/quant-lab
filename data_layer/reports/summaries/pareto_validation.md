@@ -1,6 +1,6 @@
 # Pareto Validation (BTCUSDT vs ETHUSDT)
 
-Generated: 2026-05-04 13:34 UTC. Binance only. Fee+slippage proxy = 0.18%.
+Generated: 2026-05-04 14:41 UTC. Binance only. Fee+slippage proxy = 0.18%.
 
 ## Decision
 
@@ -12,7 +12,7 @@ Rule for `RESEARCH CANDIDATE`: both symbols need `n >= 80`, positive net after f
 
 | event | tf | h | BTC n | BTC fwd/net | BTC hit | BTC ratio | ETH n | ETH fwd/net | ETH hit | ETH ratio |
 |---|---|---|---|---|---|---|---|---|---|---|
-| EV_FUND_EXTREME | 1h | h+72 | 22 | +1.29% / +1.11% | 64% | 2.43 | 20 | +0.13% / -0.05% | 55% | 1.11 |
+| EV_OI_SPIKE_UP | 1h | h+72 | 8 | +0.32% / +0.14% | 50% | 1.35 | 20 | +5.44% / +5.26% | 55% | 2.16 |
 
 ## Main weakness
 
