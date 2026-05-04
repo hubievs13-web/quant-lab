@@ -7,11 +7,15 @@ symbols: [BTCUSDT, ETHUSDT]
 timeframes: [5m, 1h]
 
 history_window:
-  ohlcv_5m_days: 180
-  ohlcv_1h_days: 730
-  funding_days: 730
-  open_interest_days: 90
-  mark_index_days: 90
-  taker_volume_days: 30
-  long_short_ratio_days: 30
+  # Validation windows used by `data_layer/scripts/fetch.py`. Keep
+  # in sync with the constants in fetch.py (DAYS_5M/1H/FUNDING/OI).
+  # Widened to 365d so cross-symbol Pareto evidence gate has enough
+  # samples (n>=80) per event/timeframe cell.
+  ohlcv_5m_days: 365
+  ohlcv_1h_days: 365
+  funding_days: 365
+  open_interest_days: 365
+  mark_index_days: 365
+  taker_volume_days: 365
+  long_short_ratio_days: 365
   liquidations_days: 30   # WS-captured only in v1; see plan Section 3

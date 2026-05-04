@@ -79,6 +79,12 @@ def _run_quality_smoke() -> int:
 
 def _run_quality_validation() -> int:
     from data_layer.process.quality import run_quality_smoke
+    from data_layer.scripts.fetch import (
+        DAYS_5M,
+        DAYS_1H,
+        DAYS_FUNDING,
+        DAYS_OI,
+    )
 
     repo_root = Path(__file__).resolve().parents[2]
     store_root = repo_root / "data_layer" / "store"
@@ -86,9 +92,9 @@ def _run_quality_validation() -> int:
         repo_root=repo_root,
         store_root=store_root,
         symbols=["BTCUSDT", "ETHUSDT"],
-        series=[("5m", 90), ("1h", 180)],
-        funding_window_days=180,
-        oi_window_days=30,
+        series=[("5m", DAYS_5M), ("1h", DAYS_1H)],
+        funding_window_days=DAYS_FUNDING,
+        oi_window_days=DAYS_OI,
     )
     print("[quality] wrote data_layer/reports/quality/latest_summary.md")
     for sym, sym_out in out.items():
