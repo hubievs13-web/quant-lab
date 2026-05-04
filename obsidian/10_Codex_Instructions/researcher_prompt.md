@@ -18,7 +18,16 @@ Acknowledge the rules in a bullet list before starting.
 Then:
 
 1. Read the most recent Data Layer artifacts (do not browse; read
-   only these specific files):
+   only these specific files, in this order):
+   - `data_layer/reports/summaries/research_candidates.md` — read
+     this FIRST. It is the single source of truth for which cells
+     simultaneously pass every gate (n>=80, walk-forward sign
+     stability for the declared tier, permutation p-value for the
+     declared tier, optional cross-symbol Pareto). If a row is
+     listed here, the cell is research-candidate-grade and you may
+     propose a hypothesis citing it. If it is empty, you MUST
+     return one of the no-candidate / blocked responses in step 3
+     below.
    - `data_layer/reports/leaderboards/latest_event_leaderboard.md`
    - `data_layer/reports/summaries/event_catalog.md`
    - `data_layer/reports/summaries/outcome_summary.md`

@@ -20,7 +20,15 @@ Required reads:
 - `obsidian/wiki/decisions/rejected_pattern_blocklist.md`.
 - The candidate hypothesis at
   `obsidian/02_Hypotheses/Hxxxx_<slug>.md`.
-- Any Data Layer summary cited by the hypothesis under
+- `data_layer/reports/summaries/research_candidates.md` — the
+  consolidated single source of truth for which cells pass every
+  stability gate at once. Always read this; the hypothesis's cited
+  cell MUST appear here.
+- `data_layer/reports/summaries/walk_forward.md` and
+  `data_layer/reports/summaries/permutation_test.md` — read the
+  rows for the cell cited by the hypothesis to confirm the quoted
+  numbers.
+- Any other Data Layer summary cited by the hypothesis under
   `obsidian/wiki/summaries/` or `obsidian/08_Data_Notes/`. Read
   only the cited files. Do not browse.
 
@@ -95,9 +103,13 @@ counts as FAIL for the verdict.
     limits. A Tier M hypothesis that omits adverse selection
     FAILS this check.
 14. **Stability evidence (walk-forward + permutation).** The cited
-    Data Layer cell MUST appear in
-    `data_layer/reports/summaries/walk_forward.md` AND
-    `data_layer/reports/summaries/permutation_test.md`. The
+    Data Layer cell MUST appear as a row in
+    `data_layer/reports/summaries/research_candidates.md` under the
+    section that matches the hypothesis's declared execution tier
+    (Tier T or Tier M). If `research_candidates.md` lists the cell
+    in the cross-symbol section, the cross-symbol Pareto gate above
+    is also satisfied; otherwise it must be justified separately.
+    Additionally the
     hypothesis MUST quote two specific numbers from those reports:
     (a) the walk-forward `M sign-stable` value (must be `yes` or
     `3/3` for Tier M, equivalent for Tier T) and (b) the permutation

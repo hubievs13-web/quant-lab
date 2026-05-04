@@ -234,6 +234,12 @@ Data layer expansion (2026-05-04):
   `p <= 0.05`; Tier M requires `M sign-stable = yes` AND `p <= 0.10`
   (the 0.10 is transitional while only 365 days are available).
 - Hypothesis template gains section "3a. Stability evidence".
+- New consolidated report `data_layer/reports/summaries/research_candidates.md`
+  is now the single source of truth for which cells pass every gate at
+  once. Researcher prompt reads it FIRST; auditor required-reads list it.
+  Sections: cross-symbol Pareto + stability, Tier T single-symbol, Tier M
+  single-symbol. Currently all three sections are empty on the 365-day
+  window — the report transparently signals "no candidate today".
 
 Honest empirical state on 365-day window:
 - Pareto cross-symbol gate: zero RESEARCH CANDIDATEs. Best joint cell is

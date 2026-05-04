@@ -444,6 +444,138 @@ def refresh_permutation_summary() -> int:
     return 0
 
 
+# Permutation p-value thresholds per execution tier. Tier T uses the
+# strict 0.05; Tier M is relaxed to 0.10 while only 365 days of data
+# are available (revisit when the window is expanded to >= 3 years).
+P_VALUE_PASS_TIER_T = 0.05
+P_VALUE_PASS_TIER_M = 0.10
+
+# Maker-tier round-trip friction (Profile A-Maker). Mirrors
+# `data_layer.process.stability.FEE_PCT_MAKER` so the candidate report
+# uses the same number as the underlying parquet.
+FEE_PCT_MAKER = 0.10
+
+
+def refresh_research_candidates_summary() -> int:
+    """One-stop list of cells that pass every gate at once.
+
+    Codex researcher mode reads this file first; if a row appears here,
+    the cell already cleared n>=80, walk-forward sign stability, and
+    the permutation p-value threshold for the matching tier. Cells
+    with cross-symbol pairing are surfaced first.
+    """
+    wf, pm = _load_stability()
+    lines = ["# Research Candidates", "", f"Last refresh: {_utc_now()}.",
+             "Cells that pass every stability gate at once. Tier T uses "
+             f"`p <= {P_VALUE_PASS_TIER_T:.2f}`; Tier M uses "
+             f"`p <= {P_VALUE_PASS_TIER_M:.2f}` (relaxed while only "
+             "365 days of data are available). All rows already require "
+             f"`n >= {PARETO_MIN_N}` and walk-forward sign stability for "
+             "the matching tier. Source: `walk_forward.md` + "
+             "`permutation_test.md`.", ""]
+    if wf.empty or pm.empty:
+        lines.append("No stability data available. Run `python -m data_layer.scripts.cli stability-validation`.")
+        out = REPORTS / "summaries" / "research_candidates.md"
+        _write_capped(out, lines)
+        print(f"[summaries] wrote {out.relative_to(REPO_ROOT)}")
+        return 0
+
+    key = ["symbol", "timeframe", "event_type", "horizon"]
+    merged = wf.merge(pm, on=key, how="inner", suffixes=("", "_pm"))
+
+    eligible_t = merged[
+        (merged["n_complete"] >= PARETO_MIN_N)
+        & (merged["sign_stable"])
+        & (merged["full_net"] > 0)
+        & (merged["p_value"] <= P_VALUE_PASS_TIER_T)
+    ].copy()
+    eligible_m = merged[
+        (merged["n_complete"] >= PARETO_MIN_N)
+        & (merged["sign_stable_maker"])
+        & (merged["full_net_maker"] > 0)
+        & (merged["p_value"] <= P_VALUE_PASS_TIER_M)
+    ].copy()
+
+    def _emit_section(title: str, df: pd.DataFrame, net_col: str) -> list[str]:
+        section = [f"## {title}", ""]
+        if df.empty:
+            section += ["None.", ""]
+            return section
+        df = df.sort_values([net_col, "n_complete"], ascending=[False, False])
+        section += [
+            "| symbol | tf | event | h | n | net | p-value |",
+            "|---|---|---|---|---|---|---|",
+        ]
+        for _, r in df.iterrows():
+            ev = str(r["event_type"]).replace("EV_", "")
+            p = "-" if pd.isna(r["p_value"]) else f"{r['p_value']:.3f}"
+            section.append(
+                f"| {r['symbol']} | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"{int(r['n_complete'])} | {_fmt_pct(r[net_col])} | {p} |"
+            )
+        section.append("")
+        return section
+
+    # Cross-symbol joint pass: same (tf, event, h) cell passes for both
+    # BTC and ETH at the same tier. Surface these first because the
+    # auditor's Pareto gate is hardest to clear.
+    def _cross_symbol(df: pd.DataFrame, net_col: str) -> pd.DataFrame:
+        if df.empty:
+            return df
+        btc = df[df["symbol"] == "BTCUSDT"]
+        eth = df[df["symbol"] == "ETHUSDT"]
+        join_keys = ["timeframe", "event_type", "horizon"]
+        joined = btc.merge(eth, on=join_keys, how="inner", suffixes=("_btc", "_eth"))
+        return joined
+
+    cross_t = _cross_symbol(eligible_t, "full_net")
+    cross_m = _cross_symbol(eligible_m, "full_net_maker")
+
+    lines += ["## Cross-symbol Pareto + stability (highest grade)", ""]
+    if cross_t.empty and cross_m.empty:
+        lines += [
+            "None at the current window. The auditor cross-symbol "
+            "Pareto gate is currently empty for both tiers.",
+            "",
+        ]
+    else:
+        lines += [
+            "| tier | tf | event | h | BTC n | BTC net | BTC p | ETH n | ETH net | ETH p |",
+            "|---|---|---|---|---|---|---|---|---|---|",
+        ]
+        for _, r in cross_t.iterrows():
+            ev = str(r["event_type"]).replace("EV_", "")
+            lines.append(
+                f"| T | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"{int(r['n_complete_btc'])} | {_fmt_pct(r['full_net_btc'])} | {r['p_value_btc']:.3f} | "
+                f"{int(r['n_complete_eth'])} | {_fmt_pct(r['full_net_eth'])} | {r['p_value_eth']:.3f} |"
+            )
+        for _, r in cross_m.iterrows():
+            ev = str(r["event_type"]).replace("EV_", "")
+            lines.append(
+                f"| M | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"{int(r['n_complete_btc'])} | {_fmt_pct(r['full_net_maker_btc'])} | {r['p_value_btc']:.3f} | "
+                f"{int(r['n_complete_eth'])} | {_fmt_pct(r['full_net_maker_eth'])} | {r['p_value_eth']:.3f} |"
+            )
+        lines.append("")
+
+    lines += _emit_section(
+        f"Tier T single-symbol candidates (`p <= {P_VALUE_PASS_TIER_T:.2f}`)",
+        eligible_t,
+        "full_net",
+    )
+    lines += _emit_section(
+        f"Tier M single-symbol candidates (`p <= {P_VALUE_PASS_TIER_M:.2f}`)",
+        eligible_m,
+        "full_net_maker",
+    )
+
+    out = REPORTS / "summaries" / "research_candidates.md"
+    _write_capped(out, lines)
+    print(f"[summaries] wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
 def refresh_all_summaries() -> int:
     refresh_universe_status()
     refresh_feature_catalog()
@@ -454,6 +586,7 @@ def refresh_all_summaries() -> int:
     refresh_pareto_validation()
     refresh_walk_forward_summary()
     refresh_permutation_summary()
+    refresh_research_candidates_summary()
     return 0
 
 
