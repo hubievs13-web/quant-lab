@@ -104,26 +104,36 @@ counts as FAIL for the verdict.
     FAILS this check.
 14. **Stability evidence (walk-forward + permutation).** The cited
     Data Layer cell MUST appear as a row in
-    `data_layer/reports/summaries/research_candidates.md` under the
-    section that matches the hypothesis's declared execution tier
-    (Tier T or Tier M). If `research_candidates.md` lists the cell
-    in the cross-symbol section, the cross-symbol Pareto gate above
-    is also satisfied; otherwise it must be justified separately.
-    Additionally the
+    `data_layer/reports/summaries/research_candidates.md` under a
+    section that matches the hypothesis's declared `(tier, direction)`
+    pair (e.g. "Tier M long candidates", "Tier M fade candidates",
+    "Tier T long candidates", "Tier T fade candidates"). If the row
+    also appears in the cross-symbol section with the matching `dir`
+    column, the cross-symbol Pareto gate above is also satisfied;
+    otherwise it must be justified separately. Additionally the
     hypothesis MUST quote two specific numbers from those reports:
-    (a) the walk-forward `M sign-stable` value (must be `yes` or
-    `3/3` for Tier M, equivalent for Tier T) and (b) the permutation
-    `p-value`. Fee tier dictates which net column is read. PASS
-    requires:
+    (a) the walk-forward `T sign-stable` / `M sign-stable` value
+    (must be `yes` for the matching tier, regardless of direction —
+    sign stability is checked on the unsigned net) and (b) the
+    permutation `p-value`. PASS requires:
     - Tier M hypothesis: `M sign-stable = yes` AND `p-value <= 0.10`
       (relaxed from 0.05 to keep at least one viable cell on the
       current 365-day window; tighten to 0.05 once a 3-year window
       is available).
     - Tier T hypothesis: `T sign-stable = yes` AND `p-value <= 0.05`.
+    Direction enforcement:
+    - `direction: long` requires `full_net > 0` for the matching
+      tier (cell must appear in a Long section).
+    - `direction: fade` requires `full_net < 0` for the matching
+      tier (cell must appear in a Fade section). The strategy code
+      must trade *against* the event direction, and the README must
+      explicitly justify why the negative-net signal is exploitable
+      (e.g. forced unwinds, liquidation cascades, premium reversion).
     Cells with insufficient n (`INSUFFICIENT_N` verdict in either
     report) FAIL this check. Cells absent from both reports FAIL
     this check (the hypothesis is operating below the n>=80
-    threshold).
+    threshold). A hypothesis whose declared direction does not match
+    the section the cell lives in FAILS this check.
 15. Exact next validation step is a single concrete action and
     does not require strategy code.
 

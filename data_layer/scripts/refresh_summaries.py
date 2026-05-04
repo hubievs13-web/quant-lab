@@ -471,8 +471,12 @@ def refresh_research_candidates_summary() -> int:
              f"`p <= {P_VALUE_PASS_TIER_M:.2f}` (relaxed while only "
              "365 days of data are available). All rows already require "
              f"`n >= {PARETO_MIN_N}` and walk-forward sign stability for "
-             "the matching tier. Source: `walk_forward.md` + "
-             "`permutation_test.md`.", ""]
+             "the matching tier. **Long sections** list cells with a "
+             "stable positive net; trade in the direction implied by "
+             "the event. **Fade sections** list cells with a stable "
+             "*negative* net; the hypothesis must declare "
+             "`direction: fade` and trade against the event. Source: "
+             "`walk_forward.md` + `permutation_test.md`.", ""]
     if wf.empty or pm.empty:
         lines.append("No stability data available. Run `python -m data_layer.scripts.cli stability-validation`.")
         out = REPORTS / "summaries" / "research_candidates.md"
@@ -495,13 +499,44 @@ def refresh_research_candidates_summary() -> int:
         & (merged["full_net_maker"] > 0)
         & (merged["p_value"] <= P_VALUE_PASS_TIER_M)
     ].copy()
+    # Fade-direction candidates: cells where the unconditional forward
+    # return is reliably negative (sign-stable across folds, low
+    # permutation p-value, but full-sample net is < 0). A short/fade
+    # strategy flips the sign and treats them as positive-net candidates.
+    # We keep the same friction thresholds but apply them to the absolute
+    # value of the net (i.e. |full_net| - friction must be > 0, which
+    # holds whenever full_net < -friction).
+    fade_t = merged[
+        (merged["n_complete"] >= PARETO_MIN_N)
+        & (merged["sign_stable"])
+        & (merged["full_net"] < 0)
+        & (merged["p_value"] <= P_VALUE_PASS_TIER_T)
+    ].copy()
+    fade_m = merged[
+        (merged["n_complete"] >= PARETO_MIN_N)
+        & (merged["sign_stable_maker"])
+        & (merged["full_net_maker"] < 0)
+        & (merged["p_value"] <= P_VALUE_PASS_TIER_M)
+    ].copy()
 
-    def _emit_section(title: str, df: pd.DataFrame, net_col: str) -> list[str]:
+    def _emit_section(
+        title: str,
+        df: pd.DataFrame,
+        net_col: str,
+        *,
+        fade: bool = False,
+    ) -> list[str]:
         section = [f"## {title}", ""]
         if df.empty:
             section += ["None.", ""]
             return section
-        df = df.sort_values([net_col, "n_complete"], ascending=[False, False])
+        # For long sections rank by descending net (best first); for fade
+        # sections rank by ascending net (most-negative first, since the
+        # fade strategy will profit most from the largest negative net).
+        df = df.sort_values(
+            [net_col, "n_complete"],
+            ascending=[fade, False],
+        )
         section += [
             "| symbol | tf | event | h | n | net | p-value |",
             "|---|---|---|---|---|---|---|",
@@ -530,44 +565,78 @@ def refresh_research_candidates_summary() -> int:
 
     cross_t = _cross_symbol(eligible_t, "full_net")
     cross_m = _cross_symbol(eligible_m, "full_net_maker")
+    cross_fade_t = _cross_symbol(fade_t, "full_net")
+    cross_fade_m = _cross_symbol(fade_m, "full_net_maker")
 
     lines += ["## Cross-symbol Pareto + stability (highest grade)", ""]
-    if cross_t.empty and cross_m.empty:
+    has_any_cross = (
+        not cross_t.empty
+        or not cross_m.empty
+        or not cross_fade_t.empty
+        or not cross_fade_m.empty
+    )
+    if not has_any_cross:
         lines += [
             "None at the current window. The auditor cross-symbol "
-            "Pareto gate is currently empty for both tiers.",
+            "Pareto gate is currently empty for every tier and direction.",
             "",
         ]
     else:
         lines += [
-            "| tier | tf | event | h | BTC n | BTC net | BTC p | ETH n | ETH net | ETH p |",
-            "|---|---|---|---|---|---|---|---|---|---|",
+            "| tier | dir | tf | event | h | BTC n | BTC net | BTC p | ETH n | ETH net | ETH p |",
+            "|---|---|---|---|---|---|---|---|---|---|---|",
         ]
         for _, r in cross_t.iterrows():
             ev = str(r["event_type"]).replace("EV_", "")
             lines.append(
-                f"| T | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"| T | long | {r['timeframe']} | {ev} | {r['horizon']} | "
                 f"{int(r['n_complete_btc'])} | {_fmt_pct(r['full_net_btc'])} | {r['p_value_btc']:.3f} | "
                 f"{int(r['n_complete_eth'])} | {_fmt_pct(r['full_net_eth'])} | {r['p_value_eth']:.3f} |"
             )
         for _, r in cross_m.iterrows():
             ev = str(r["event_type"]).replace("EV_", "")
             lines.append(
-                f"| M | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"| M | long | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"{int(r['n_complete_btc'])} | {_fmt_pct(r['full_net_maker_btc'])} | {r['p_value_btc']:.3f} | "
+                f"{int(r['n_complete_eth'])} | {_fmt_pct(r['full_net_maker_eth'])} | {r['p_value_eth']:.3f} |"
+            )
+        for _, r in cross_fade_t.iterrows():
+            ev = str(r["event_type"]).replace("EV_", "")
+            lines.append(
+                f"| T | fade | {r['timeframe']} | {ev} | {r['horizon']} | "
+                f"{int(r['n_complete_btc'])} | {_fmt_pct(r['full_net_btc'])} | {r['p_value_btc']:.3f} | "
+                f"{int(r['n_complete_eth'])} | {_fmt_pct(r['full_net_eth'])} | {r['p_value_eth']:.3f} |"
+            )
+        for _, r in cross_fade_m.iterrows():
+            ev = str(r["event_type"]).replace("EV_", "")
+            lines.append(
+                f"| M | fade | {r['timeframe']} | {ev} | {r['horizon']} | "
                 f"{int(r['n_complete_btc'])} | {_fmt_pct(r['full_net_maker_btc'])} | {r['p_value_btc']:.3f} | "
                 f"{int(r['n_complete_eth'])} | {_fmt_pct(r['full_net_maker_eth'])} | {r['p_value_eth']:.3f} |"
             )
         lines.append("")
 
     lines += _emit_section(
-        f"Tier T single-symbol candidates (`p <= {P_VALUE_PASS_TIER_T:.2f}`)",
+        f"Tier T long candidates (`p <= {P_VALUE_PASS_TIER_T:.2f}`)",
         eligible_t,
         "full_net",
     )
     lines += _emit_section(
-        f"Tier M single-symbol candidates (`p <= {P_VALUE_PASS_TIER_M:.2f}`)",
+        f"Tier M long candidates (`p <= {P_VALUE_PASS_TIER_M:.2f}`)",
         eligible_m,
         "full_net_maker",
+    )
+    lines += _emit_section(
+        f"Tier T fade candidates (`p <= {P_VALUE_PASS_TIER_T:.2f}`, negative net)",
+        fade_t,
+        "full_net",
+        fade=True,
+    )
+    lines += _emit_section(
+        f"Tier M fade candidates (`p <= {P_VALUE_PASS_TIER_M:.2f}`, negative net)",
+        fade_m,
+        "full_net_maker",
+        fade=True,
     )
 
     out = REPORTS / "summaries" / "research_candidates.md"

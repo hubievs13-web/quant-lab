@@ -237,9 +237,20 @@ Data layer expansion (2026-05-04):
 - New consolidated report `data_layer/reports/summaries/research_candidates.md`
   is now the single source of truth for which cells pass every gate at
   once. Researcher prompt reads it FIRST; auditor required-reads list it.
-  Sections: cross-symbol Pareto + stability, Tier T single-symbol, Tier M
-  single-symbol. Currently all three sections are empty on the 365-day
-  window — the report transparently signals "no candidate today".
+  Sections: cross-symbol Pareto + stability (with `dir` column),
+  Tier T long, Tier M long, Tier T fade, Tier M fade. The Long sections
+  surface cells with stable positive net (trade in the event direction);
+  the Fade sections surface cells with stable *negative* net under
+  `p<=threshold` (trade *against* the event). Hypotheses must declare
+  `direction: long | fade` and the section the cell appears in must
+  match.
+- On the 365-day window the Long sections are still empty for both tiers,
+  but the Fade sections produce 5 viable Tier M intraday candidates: BTC
+  5m PREMIUM_COMPRESSION h+1 (n=2224, p=0.017), BTC 5m VOL_BREAKOUT h+12
+  (n=512, p=0.081), ETH 5m VOL_BREAKOUT h+1 (n=587, p=0.078), BTC 1h
+  PREMIUM_SPIKE h+1 (n=256, p=0.070), and BTC 5m VOL_BREAKOUT h+72 (long
+  horizon, profile-incompatible). PREMIUM_COMPRESSION h+1 is the cleanest
+  fade candidate — n=2224 and p=0.017 are both very strong.
 
 Honest empirical state on 365-day window:
 - Pareto cross-symbol gate: zero RESEARCH CANDIDATEs. Best joint cell is

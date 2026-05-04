@@ -44,13 +44,25 @@ event_type, horizon) cell as the leaderboard citation above. If
 either report does not contain the cell, the hypothesis is below
 the n>=80 stability threshold and cannot pass the auditor.
 
+- direction: `long` or `fade` (`long` trades in the direction
+  implied by the event; `fade` trades against it. `fade` is only
+  valid when the cell appears in a Fade section of
+  `research_candidates.md`, i.e. the unconditional net is
+  reliably *negative* and sign-stable across folds.)
 - file: `data_layer/reports/summaries/walk_forward.md`
-- T sign-stable: ... (must be `yes` for Tier T)
-- M sign-stable: ... (must be `yes` for Tier M)
+- T sign-stable: ... (must be `yes` for Tier T, regardless of
+  direction)
+- M sign-stable: ... (must be `yes` for Tier M, regardless of
+  direction)
 - file: `data_layer/reports/summaries/permutation_test.md`
 - p-value: ... (Tier T requires `<= 0.05`, Tier M requires
   `<= 0.10` while only 365 days are available)
 - verdict: ... (must be `PASS` for Tier T)
+- file: `data_layer/reports/summaries/research_candidates.md`
+- section the cell appears in: ... (must match the declared
+  direction and tier; e.g. "Tier M long candidates" for a
+  Profile A-Maker long, or "Tier M fade candidates" for a
+  Profile A-Maker fade.)
 
 ## 3b. Fee budget gate
 
