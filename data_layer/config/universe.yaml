@@ -9,13 +9,22 @@ timeframes: [5m, 1h]
 history_window:
   # Validation windows used by `data_layer/scripts/fetch.py`. Keep
   # in sync with the constants in fetch.py (DAYS_5M/1H/FUNDING/OI).
-  # Widened to 365d so cross-symbol Pareto evidence gate has enough
-  # samples (n>=80) per event/timeframe cell.
-  ohlcv_5m_days: 365
-  ohlcv_1h_days: 365
-  funding_days: 365
+  # Widened to 1095 days (3 years) so the permutation test has tight
+  # p-values (sample size grows ~3x) and previously empty cells
+  # cross n>=80. OI is capped server-side at ~30 days of 5m / ~30
+  # days of 5m granularity, so its window stays at 365 — see the
+  # comment on `open_interest_days` below.
+  ohlcv_5m_days: 1095
+  ohlcv_1h_days: 1095
+  funding_days: 1095
+  # Binance Vision serves OI as daily archives in 5m granularity for
+  # the recent ~30 days only. Larger archives are served as 1h
+  # aggregates extending several years; the ingest layer falls back
+  # to those automatically. Keep the request budget at 365 days for
+  # OI to avoid silently downgrading 5m bars; revisit if a 5m OI
+  # source emerges.
   open_interest_days: 365
-  mark_index_days: 365
-  taker_volume_days: 365
-  long_short_ratio_days: 365
+  mark_index_days: 1095
+  taker_volume_days: 1095
+  long_short_ratio_days: 1095
   liquidations_days: 30   # WS-captured only in v1; see plan Section 3
