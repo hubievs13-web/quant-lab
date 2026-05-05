@@ -386,8 +386,8 @@ class FundExtremeCrossSymbolContinuation(QCAlgorithm):
         self.set_time_zone(TimeZones.UTC)
         self.set_start_date(2024, 1, 1)
         self.set_end_date(2026, 5, 2)
+        self.set_account_currency("USD")
         self.set_cash(200)
-        self.set_account_currency("USD", 200)
 
         self.set_brokerage_model(BrokerageName.BINANCE, AccountType.MARGIN)
 
