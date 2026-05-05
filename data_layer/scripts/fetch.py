@@ -35,9 +35,13 @@ SYMBOLS = ("BTCUSDT", "ETHUSDT")
 # Default validation windows (overridable for unit tests / smoke).
 # Values must stay in sync with `data_layer/config/universe.yaml`
 # `history_window` keys for documentation purposes.
-DAYS_5M = 365
-DAYS_1H = 365
-DAYS_FUNDING = 365
+DAYS_5M = 1095
+DAYS_1H = 1095
+DAYS_FUNDING = 1095
+# Binance Vision OI 5m archive only covers the recent ~30 days; for
+# anything beyond that the ingest layer downgrades to 1h granularity.
+# Keep the budget capped to 365 to avoid surprises at the 5m level
+# and to bound fetch time.
 DAYS_OI = 365
 
 

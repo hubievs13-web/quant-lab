@@ -1,32 +1,32 @@
 # Data Layer Quality Report (latest)
 
-Generated: 2026-05-04 14:42 UTC
+Generated: 2026-05-05 15:39 UTC
 Source: Binance USD-M futures via `data.binance.vision` (public CDN).
 
 ## OHLCV (per series)
 
 | symbol | tf | days | expected | received | dedup | missing | duplicates | out-of-order | status |
 |---|---|---|---|---|---|---|---|---|---|
-| BTCUSDT | 5m | 365 | 105120 | 105120 | 105120 | 0 | 0 | 0 | green |
-| BTCUSDT | 1h | 365 | 8760 | 8760 | 8760 | 0 | 0 | 0 | green |
-| ETHUSDT | 5m | 365 | 105120 | 105120 | 105120 | 0 | 0 | 0 | green |
-| ETHUSDT | 1h | 365 | 8760 | 8760 | 8760 | 0 | 0 | 0 | green |
+| BTCUSDT | 5m | 1095 | 315360 | 315360 | 315360 | 0 | 0 | 0 | green |
+| BTCUSDT | 1h | 1095 | 26280 | 26280 | 26280 | 0 | 0 | 0 | green |
+| ETHUSDT | 5m | 1095 | 315360 | 315360 | 315360 | 0 | 0 | 0 | green |
+| ETHUSDT | 1h | 1095 | 26280 | 26280 | 26280 | 0 | 0 | 0 | green |
 
 ## Funding
 
 | symbol | rows received | rows expected (~) | first settle (ms) | last settle (ms) |
 |---|---|---|---|---|
-| BTCUSDT | 1095 | 1095 | 1746057600000 | 1777564800000 |
-| ETHUSDT | 1095 | 1095 | 1746057600000 | 1777564800000 |
+| BTCUSDT | 3288 | 3285 | 1682899200004 | 1777564800000 |
+| ETHUSDT | 3288 | 3285 | 1682899200004 | 1777564800000 |
 
 ## Mark / Index price klines
 
 | symbol | series | mark rows | index rows |
 |---|---|---|---|
-| BTCUSDT | 5m | 105120 | 105120 |
-| BTCUSDT | 1h | 8760 | 8760 |
-| ETHUSDT | 5m | 105120 | 105120 |
-| ETHUSDT | 1h | 8760 | 8760 |
+| BTCUSDT | 5m | 315355 | 313916 |
+| BTCUSDT | 1h | 26280 | 26160 |
+| ETHUSDT | 5m | 315355 | 315068 |
+| ETHUSDT | 1h | 26280 | 26256 |
 
 ## Open Interest (5-minute granularity)
 

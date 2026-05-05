@@ -1,10 +1,10 @@
 # Pareto Validation (BTCUSDT vs ETHUSDT)
 
-Generated: 2026-05-04 15:23 UTC. Binance only. Fee+slippage proxy = 0.18%.
+Generated: 2026-05-05 15:41 UTC. Binance only. Fee+slippage proxy = 0.18%.
 
 ## Decision
 
-**WATCHLIST ONLY.**
+**RESEARCH CANDIDATE.**
 
 Rule for `RESEARCH CANDIDATE`: both symbols need `n >= 80`, positive net after fees, `hit > 55%`, and `MFE/|MAE| >= 1.0`.
 
@@ -12,8 +12,8 @@ Rule for `RESEARCH CANDIDATE`: both symbols need `n >= 80`, positive net after f
 
 | event | tf | h | BTC n | BTC fwd/net | BTC hit | BTC ratio | ETH n | ETH fwd/net | ETH hit | ETH ratio |
 |---|---|---|---|---|---|---|---|---|---|---|
-| EV_OI_SPIKE_UP | 1h | h+72 | 8 | +0.32% / +0.14% | 50% | 1.35 | 20 | +5.44% / +5.26% | 55% | 2.16 |
+| EV_FUND_EXTREME | 1h | h+72 | 156 | +1.10% / +0.92% | 56% | 1.37 | 136 | +0.98% / +0.80% | 60% | 1.23 |
 
 ## Main weakness
 
-The best event is not stable across both symbols after fees.
+Cross-symbol stability achieved on the best common cell.
