@@ -4,7 +4,7 @@
 
 Implements `obsidian/02_Hypotheses/H0009_fund_extreme_cross_symbol_continuation.md`.
 
-Funding-driven crowds, basis arbitrageurs, and leveraged directional traders can keep pressure in the same direction after a funding extreme instead of immediately unwinding. A `FUND_EXTREME` event identifies a perpetual-specific positioning state. The strategy trades the event direction on BTCUSDT and ETHUSDT over the h+72 horizon.
+After a `FUND_EXTREME` event, extreme positive OR negative funding can mark forced positioning pressure that clears the order book. In the cited 3-year sample, forced liquidations cleared the order book and the asset reverted toward the prevailing multi-month trend. The strategy is always long after a `FUND_EXTREME` firing on BTCUSDT or ETHUSDT and holds over the h+72 horizon.
 
 ## Profile
 
@@ -12,10 +12,19 @@ Funding-driven crowds, basis arbitrageurs, and leveraged directional traders can
 - Execution tier: Tier M, maker-mostly.
 - Universe: BTCUSDT and ETHUSDT Binance USD-M Futures.
 - Resolution: 1h.
-- Direction: long section semantics from Data Layer, meaning trade in the event direction.
+- Direction: always long after any `FUND_EXTREME` firing, regardless of funding sign.
 - Event horizon: h+72.
 - Expected frequency: approximately 2 combined trades per week from BTC n=156 plus ETH n=136 over roughly 3 years.
-- Expected pre-fee edge: BTCUSDT 1.08 percent; ETHUSDT 0.96 percent.
+- Expected pre-fee edge: BTCUSDT +1.10 percent; ETHUSDT +0.98 percent.
+
+Funding-sign split in the cited 3-year sample:
+
+| Symbol | Positive funding | Negative funding | All FUND_EXTREME |
+|---|---:|---:|---:|
+| BTCUSDT | n=84, mean +1.61% | n=72, mean +0.50% | n=156, mean +1.10% |
+| ETHUSDT | n=77, mean +1.11% | n=59, mean +0.82% | n=136, mean +0.98% |
+
+Both funding-sign branches went up. The strategy therefore does not trade in the sign of funding; it always uses side `+1`.
 
 Quoted Data Layer evidence:
 
@@ -27,7 +36,7 @@ Quoted Data Layer evidence:
 
 | Name | Value | Role | A priori justification |
 |------|-------|------|------------------------|
-| `FUNDING_EXTREME_ZSCORE` | `2.0` | Fires `FUND_EXTREME` when 30-day funding z-score is at least 2 in absolute value. | Matches event catalog rule: `EV_FUND_EXTREME`: `|funding_rate_zscore_30d| >= 2`. |
+| `FUNDING_EXTREME_ZSCORE` | `2.0` | Fires `FUND_EXTREME` when 30-day funding z-score is at least 2 in absolute value. | Matches event catalog rule: `EV_FUND_EXTREME`: `|funding_rate_zscore_30d| >= 2`; funding is observed every 8 hours, so the code requires 90 observations before z-score evaluation. |
 | `HOLD_HOURS` | `72` | Fixed time exit after entry. | Matches the cited `h+72` Data Layer horizon. |
 | `PER_TRADE_STOP_FRAC` | `0.01` | Hard per-trade drawdown stop at -1 percent from entry. | Risk constraint requested for this implementation; not optimized from results. |
 
@@ -81,8 +90,9 @@ Rows must be chronological UTC timestamps. Funding values are used only after th
 
 - Add BTCUSDT and ETHUSDT with `add_crypto_future(..., Resolution.HOUR, market=Market.BINANCE)`.
 - Maintain a rolling funding history per symbol.
-- Fire `FUND_EXTREME` when `|funding_rate_zscore_30d| >= 2`; if history is too short or standard deviation is zero, use the event catalog fallback `|funding_rate| >= 5 bp`.
-- Positive funding extreme trades long; negative funding extreme trades short.
+- Fire `FUND_EXTREME` when `|funding_rate_zscore_30d| >= 2`; since funding is observed every 8 hours, the z-score branch requires at least 90 observations.
+- If history is too short or standard deviation is zero, use the event catalog fallback `|funding_rate| >= 5 bp`.
+- Positive funding extreme trades long; negative funding extreme also trades long. The side field remains in logs and data structures, but is hard-coded to `+1` for this hypothesis.
 - Submit a maker-entry proxy limit at the latest completed 1h close.
 - On the next 1h bar, enter only if the bar touched the limit and closed at least 0.05 percent adverse to the fill side.
 - Cancel unfilled or non-adverse maker entries; no taker fallback.
@@ -97,12 +107,16 @@ Rows must be chronological UTC timestamps. Funding values are used only after th
 
 ## Expected Failure Modes
 
-1. Funding extremes become reversal signals in OOS instead of continuation signals.
+1. The recovery/uptrend regime ends and the always-long post-FUND_EXTREME effect does not survive in an extended bear regime.
 2. Funding payments during a 72-hour hold reduce or erase the price edge, especially when the position pays funding.
 3. Maker adverse-selection fills admit a worse subset than the event-level Data Layer summary.
 4. BTCUSDT and ETHUSDT events cluster during the same macro regimes, increasing drawdown.
 5. Custom funding data alignment or QC custom-data hosting fails, disabling valid signal generation.
 6. Hard-stop exits may incur taker-like friction not captured by the Tier M edge summary.
+
+## Regime Caveat
+
+This signal was validated on a recovery / uptrend regime in the 2023-2026 sample, dominated by BTC/ETH recovery and continuation behavior. If the prevailing trend reverses into an extended bear regime, the always-long direction must be re-validated before relying on it. After deployment or paper trading, monitor monthly post-event outcomes by symbol and by funding sign to detect decay or sign reversal.
 
 ## Known Risks
 

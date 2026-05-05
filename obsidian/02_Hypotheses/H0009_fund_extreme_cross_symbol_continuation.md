@@ -18,13 +18,12 @@ free_parameters: [funding_extreme_event, hold_hours]
 
 ## 1. Mechanism
 
-Funding-driven crowds, basis arbitrageurs, and leveraged directional
-traders can keep pressure in the same direction after a funding extreme
-instead of immediately unwinding. A `FUND_EXTREME` event identifies a
-perpetual-specific positioning state, and the cited Data Layer evidence
-shows positive h+72 continuation on both BTCUSDT and ETHUSDT under Tier
-M friction. The hypothesis trades long in the event direction and holds
-for the h+72 horizon.
+After a `FUND_EXTREME` event, extreme positive OR negative funding can
+mark forced positioning pressure that clears the order book. In the
+cited 3-year sample, forced liquidations cleared the order book and the
+asset reverted toward the prevailing multi-month trend. The hypothesis
+is always long after a `FUND_EXTREME` firing on BTCUSDT or ETHUSDT and
+holds for the h+72 horizon.
 
 ## 2. Distinct-from-rejected statement
 
@@ -35,18 +34,22 @@ ETHUSDT through residual lead-lag. It is not H0005 because it does not
 trade a same-symbol compression breakout or generic price expansion. It
 is not H0007 because it does not use the funding settlement clock or
 bar-only pre-settlement displacement; it uses an actual funding extreme
-state and a multi-day h+72 continuation horizon. It is not H0008 because
-it does not combine funding with premium compression to trade a crowding
-unwind; the proposed direction is continuation.
+state and a multi-day h+72 always-long recovery / trend-reversion
+horizon. It is not H0008 because it does not combine funding with
+premium compression to trade a crowding unwind; the proposed direction
+is long regardless of funding sign.
 
 ## 3. Expected pre-fee edge
 
-- Expected average pre-fee PnL per trade: BTCUSDT approximately 1.08
-  percent; ETHUSDT approximately 0.96 percent.
-- Reasoning: `research_candidates.md` reports Tier M net values after
-  approximately 0.08 percent round-trip friction. Adding the Tier M
-  friction back gives BTCUSDT 1.00% + 0.08% = 1.08% and ETHUSDT 0.88% +
-  0.08% = 0.96% pre-fee.
+- Expected average pre-fee PnL per trade: BTCUSDT approximately 1.10
+  percent; ETHUSDT approximately 0.98 percent.
+- Reasoning: the cited 3-year split shows BTC FUND_EXTREME h+72:
+  positive funding n=84 mean +1.61%, negative funding n=72 mean
+  +0.50%, all n=156 mean +1.10%; ETH FUND_EXTREME h+72: positive
+  funding n=77 mean +1.11%, negative funding n=59 mean +0.82%, all
+  n=136 mean +0.98%. Both funding-sign branches went up, so this
+  hypothesis is always long after FUND_EXTREME rather than trading in
+  the sign of funding.
 - Floor for the declared execution tier (see
   `obsidian/01_Rules/02_Fee_Slippage_Model.md`):
   - Tier T: must be >= 0.30 percent;
@@ -57,8 +60,9 @@ unwind; the proposed direction is continuation.
 
 ## 3a. Stability evidence (walk-forward + permutation)
 
-- direction: `long`. The cell appears in a Long section and trades in
-  the event direction.
+- direction: `long`. The cell appears in a Long section; this
+  hypothesis implements that as always long after a `FUND_EXTREME`
+  firing, regardless of whether funding is positive or negative.
 - file: `data_layer/reports/summaries/walk_forward.md`
 - T sign-stable: BTCUSDT `yes`; ETHUSDT `yes`.
 - M sign-stable: BTCUSDT `yes`; ETHUSDT `yes`.
@@ -146,8 +150,8 @@ of 1 to 6 trades per week in `.codex/AGENTS.md` Section 3.
 
 ## 6. Expected failure modes
 
-1. The funding extreme is a continuation signal in the research window
-   but becomes a reversal signal in the OOS backtest.
+1. The recovery/uptrend regime ends and the always-long
+   post-FUND_EXTREME effect does not survive in an extended bear regime.
 2. Funding payments over a 72-hour hold reduce or erase the net edge,
    especially when the strategy is on the paying side of funding.
 3. Maker fills are adversely selected; the adverse-selection fill proxy
@@ -157,6 +161,15 @@ of 1 to 6 trades per week in `.codex/AGENTS.md` Section 3.
    reducing diversification and increasing drawdown.
 5. Custom funding data alignment in QuantConnect could be wrong or
    unavailable, blocking a valid test.
+
+## 6a. Regime caveat
+
+This signal was validated on a recovery / uptrend regime in the
+2023-2026 sample, dominated by BTC/ETH recovery and continuation
+behavior. If the prevailing trend reverses into an extended bear regime,
+the always-long direction must be re-validated before relying on it.
+After deployment or paper trading, monitor monthly post-event outcomes
+by symbol and by funding sign to detect decay or sign reversal.
 
 ## 7. Data required
 

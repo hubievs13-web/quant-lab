@@ -572,19 +572,17 @@ class FundExtremeCrossSymbolContinuation(QCAlgorithm):
         fallback_abs_rate = 5.0 / 10000.0
         zscore = 0.0
         side = 0
-        if len(state.funding_history) >= 30:
+        if len(state.funding_history) >= 90:
             values = list(state.funding_history)
             mean = sum(values) / len(values)
             variance = sum((value - mean) * (value - mean) for value in values) / len(values)
             std = math.sqrt(variance)
             if std > 0.0:
                 zscore = (funding_rate - mean) / std
-                if zscore >= FUNDING_EXTREME_ZSCORE:
+                if abs(zscore) >= FUNDING_EXTREME_ZSCORE:
                     side = 1
-                elif zscore <= -FUNDING_EXTREME_ZSCORE:
-                    side = -1
         if side == 0 and abs(funding_rate) >= fallback_abs_rate:
-            side = 1 if funding_rate > 0.0 else -1
+            side = 1
         return side, zscore
 
     def _submit_signal(self, state, side, funding_time, funding_rate, zscore):
