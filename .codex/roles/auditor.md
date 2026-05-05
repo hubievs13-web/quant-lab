@@ -39,6 +39,10 @@ Produce a checklist review in chat. Sections:
    - Free parameters <= 3? (pass/fail, list them)
    - Operating profile declared and matches Section 3 of
      `.codex/AGENTS.md`? (pass/fail, name the profile)
+   - Profile-horizon match: the cited Data Layer cell's `h+N`
+     horizon falls in the declared profile's allowed range
+     (A-Maker / A-Taker / B: `h+1`..`h+12`; B-Position:
+     `h+24`..`h+168`)? (pass/fail)
    - Expected pre-fee edge clears the floor for the declared
      execution tier (Tier T >= 0.30 percent, Tier M >= 0.20
      percent), with a quoted Data Layer line? (pass/fail)

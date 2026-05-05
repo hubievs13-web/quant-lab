@@ -468,15 +468,22 @@ def refresh_research_candidates_summary() -> int:
     lines = ["# Research Candidates", "", f"Last refresh: {_utc_now()}.",
              "Cells that pass every stability gate at once. Tier T uses "
              f"`p <= {P_VALUE_PASS_TIER_T:.2f}`; Tier M uses "
-             f"`p <= {P_VALUE_PASS_TIER_M:.2f}` (relaxed while only "
-             "365 days of data are available). All rows already require "
-             f"`n >= {PARETO_MIN_N}` and walk-forward sign stability for "
-             "the matching tier. **Long sections** list cells with a "
-             "stable positive net; trade in the direction implied by "
-             "the event. **Fade sections** list cells with a stable "
-             "*negative* net; the hypothesis must declare "
-             "`direction: fade` and trade against the event. Source: "
-             "`walk_forward.md` + `permutation_test.md`.", ""]
+             f"`p <= {P_VALUE_PASS_TIER_M:.2f}` (kept slightly looser "
+             "because maker friction is lower). All rows already "
+             f"require `n >= {PARETO_MIN_N}` and walk-forward sign "
+             "stability for the matching tier. **Long sections** list "
+             "cells with `mean_forward_return > friction` (the long "
+             "trade clears fees by itself); the displayed `net` is "
+             "the long-direction net after the matching tier's "
+             "friction. **Fade sections** list cells with "
+             "`mean_forward_return < -friction` (the unconditional "
+             "return is reliably negative *enough* that flipping the "
+             "sign and paying friction again still leaves a positive "
+             "per-trade edge); the displayed `net` is the fade-"
+             "direction net (i.e. `-mean_forward_return - friction`). "
+             "Cells with small negative `full_net` but `|mean| < "
+             "friction` are *not* fade-tradable and do not appear. "
+             "Source: `walk_forward.md` + `permutation_test.md`.", ""]
     if wf.empty or pm.empty:
         lines.append("No stability data available. Run `python -m data_layer.scripts.cli stability-validation`.")
         out = REPORTS / "summaries" / "research_candidates.md"
@@ -500,42 +507,53 @@ def refresh_research_candidates_summary() -> int:
         & (merged["p_value"] <= P_VALUE_PASS_TIER_M)
     ].copy()
     # Fade-direction candidates: cells where the unconditional forward
-    # return is reliably negative (sign-stable across folds, low
-    # permutation p-value, but full-sample net is < 0). A short/fade
-    # strategy flips the sign and treats them as positive-net candidates.
-    # We keep the same friction thresholds but apply them to the absolute
-    # value of the net (i.e. |full_net| - friction must be > 0, which
-    # holds whenever full_net < -friction).
-    fade_t = merged[
+    # return is reliably negative AND its magnitude exceeds friction.
+    # A short/fade strategy flips the sign and pays friction *again*
+    # on the (now positive) shorted return, so the cell is only fade-
+    # tradable when `mean_forward_return < -friction` (equivalently,
+    # `full_net < -2 * friction`, since `full_net = mean - friction`).
+    # The earlier `full_net < 0` filter was too loose: it included
+    # cells where `mean` was slightly positive and `full_net` only
+    # turned negative because friction was subtracted, which makes
+    # the fade direction *more* negative, not viable.
+    # The displayed net is the actual fade-direction net after the
+    # matching tier's friction (i.e. `-mean - friction`), so a row
+    # in the fade section with `net = +0.22%` reflects the per-trade
+    # edge a fade strategy would actually realise.
+    fade_mask_t = (
         (merged["n_complete"] >= PARETO_MIN_N)
         & (merged["sign_stable"])
-        & (merged["full_net"] < 0)
+        & (merged["full_mean"] < -FEE_PCT)
         & (merged["p_value"] <= P_VALUE_PASS_TIER_T)
-    ].copy()
-    fade_m = merged[
+    )
+    fade_t = merged[fade_mask_t].copy()
+    fade_t["fade_net"] = -fade_t["full_mean"] - FEE_PCT
+    fade_mask_m = (
         (merged["n_complete"] >= PARETO_MIN_N)
         & (merged["sign_stable_maker"])
-        & (merged["full_net_maker"] < 0)
+        & (merged["full_mean"] < -FEE_PCT_MAKER)
         & (merged["p_value"] <= P_VALUE_PASS_TIER_M)
-    ].copy()
+    )
+    fade_m = merged[fade_mask_m].copy()
+    fade_m["fade_net_maker"] = -fade_m["full_mean"] - FEE_PCT_MAKER
 
     def _emit_section(
         title: str,
         df: pd.DataFrame,
         net_col: str,
-        *,
-        fade: bool = False,
     ) -> list[str]:
+        # Long and fade sections both display a per-trade net that
+        # represents the actual edge in the section's direction (long
+        # net for long sections, fade net for fade sections), so the
+        # ranking is uniformly descending: largest positive number
+        # first.
         section = [f"## {title}", ""]
         if df.empty:
             section += ["None.", ""]
             return section
-        # For long sections rank by descending net (best first); for fade
-        # sections rank by ascending net (most-negative first, since the
-        # fade strategy will profit most from the largest negative net).
         df = df.sort_values(
             [net_col, "n_complete"],
-            ascending=[fade, False],
+            ascending=[False, False],
         )
         section += [
             "| symbol | tf | event | h | n | net | p-value |",
@@ -565,8 +583,8 @@ def refresh_research_candidates_summary() -> int:
 
     cross_t = _cross_symbol(eligible_t, "full_net")
     cross_m = _cross_symbol(eligible_m, "full_net_maker")
-    cross_fade_t = _cross_symbol(fade_t, "full_net")
-    cross_fade_m = _cross_symbol(fade_m, "full_net_maker")
+    cross_fade_t = _cross_symbol(fade_t, "fade_net")
+    cross_fade_m = _cross_symbol(fade_m, "fade_net_maker")
 
     lines += ["## Cross-symbol Pareto + stability (highest grade)", ""]
     has_any_cross = (
@@ -604,15 +622,15 @@ def refresh_research_candidates_summary() -> int:
             ev = str(r["event_type"]).replace("EV_", "")
             lines.append(
                 f"| T | fade | {r['timeframe']} | {ev} | {r['horizon']} | "
-                f"{int(r['n_complete_btc'])} | {_fmt_pct(r['full_net_btc'])} | {r['p_value_btc']:.3f} | "
-                f"{int(r['n_complete_eth'])} | {_fmt_pct(r['full_net_eth'])} | {r['p_value_eth']:.3f} |"
+                f"{int(r['n_complete_btc'])} | {_fmt_pct(r['fade_net_btc'])} | {r['p_value_btc']:.3f} | "
+                f"{int(r['n_complete_eth'])} | {_fmt_pct(r['fade_net_eth'])} | {r['p_value_eth']:.3f} |"
             )
         for _, r in cross_fade_m.iterrows():
             ev = str(r["event_type"]).replace("EV_", "")
             lines.append(
                 f"| M | fade | {r['timeframe']} | {ev} | {r['horizon']} | "
-                f"{int(r['n_complete_btc'])} | {_fmt_pct(r['full_net_maker_btc'])} | {r['p_value_btc']:.3f} | "
-                f"{int(r['n_complete_eth'])} | {_fmt_pct(r['full_net_maker_eth'])} | {r['p_value_eth']:.3f} |"
+                f"{int(r['n_complete_btc'])} | {_fmt_pct(r['fade_net_maker_btc'])} | {r['p_value_btc']:.3f} | "
+                f"{int(r['n_complete_eth'])} | {_fmt_pct(r['fade_net_maker_eth'])} | {r['p_value_eth']:.3f} |"
             )
         lines.append("")
 
@@ -627,16 +645,14 @@ def refresh_research_candidates_summary() -> int:
         "full_net_maker",
     )
     lines += _emit_section(
-        f"Tier T fade candidates (`p <= {P_VALUE_PASS_TIER_T:.2f}`, negative net)",
+        f"Tier T fade candidates (`p <= {P_VALUE_PASS_TIER_T:.2f}`, fade net after taker friction)",
         fade_t,
-        "full_net",
-        fade=True,
+        "fade_net",
     )
     lines += _emit_section(
-        f"Tier M fade candidates (`p <= {P_VALUE_PASS_TIER_M:.2f}`, negative net)",
+        f"Tier M fade candidates (`p <= {P_VALUE_PASS_TIER_M:.2f}`, fade net after maker friction)",
         fade_m,
-        "full_net_maker",
-        fade=True,
+        "fade_net_maker",
     )
 
     out = REPORTS / "summaries" / "research_candidates.md"

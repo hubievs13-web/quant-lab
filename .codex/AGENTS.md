@@ -71,27 +71,48 @@ capital, frequency, and execution tier to the fee model floors in
 `obsidian/01_Rules/02_Fee_Slippage_Model.md`. Auditor rejects a strategy
 that does not match any profile.
 
-- Profile A-Maker (default for v1)
+- Profile A-Maker (default for v1; intraday)
   - Starting capital: USD 200.
   - Target trades per day: 5 to 15.
   - Execution tier: M (maker-mostly). Limit-order entries with the
     adverse-selection rule from `01_Rules/02_Fee_Slippage_Model.md`.
     Taker exits allowed for time stop or drawdown stop with full Tier T
     friction on that leg.
+  - Allowed event horizons (from Data Layer cells): h+1 to h+12.
   - Required pre-fee average per-trade edge: >= 0.20 percent.
   - Annualized friction budget: <= 25 percent of starting capital.
 
-- Profile A-Taker (allowed only when a clear high-edge mechanism exists)
+- Profile A-Taker (intraday; allowed only when a clear high-edge mechanism exists)
   - Starting capital: USD 200.
   - Target trades per day: 1 to 3.
   - Execution tier: T (taker, market orders).
+  - Allowed event horizons: h+1 to h+12.
   - Required pre-fee average per-trade edge: >= 0.30 percent.
   - Annualized friction budget: <= 25 percent of starting capital.
 
-- Profile B (paper or larger account, taker)
+- Profile B-Position (multi-day swing on the same $200 account)
+  - Starting capital: USD 200.
+  - Target trades per week: 5 to 15 (roughly 1 to 3 per trading day,
+    each held for 1 to 7 days). Annualized this gives ~260 to ~780
+    closed trades, well above the 300-trade Falsification threshold
+    over a 3-year backtest.
+  - Execution tier: M (maker-mostly), with the same adverse-selection
+    rule and fallback policy as Profile A-Maker. Multi-day holds make
+    the Tier M floor easier to clear because per-trade pre-fee edge
+    is naturally larger at h+24 / h+72 horizons.
+  - Allowed event horizons: h+24 to h+168 (1 day to 1 week). Cells
+    shorter than h+24 belong to Profile A-Maker; cells longer than
+    h+168 require a separate profile and explicit user approval.
+  - Required pre-fee average per-trade edge: >= 0.20 percent (same
+    Tier M floor as A-Maker; the lower friction is what makes the
+    longer hold viable, not a different floor).
+  - Annualized friction budget: <= 25 percent of starting capital.
+
+- Profile B (paper or larger account, taker; legacy v0 profile)
   - Starting capital: USD 5000 or higher.
   - Target trades per day: 5 to 15.
   - Execution tier: T.
+  - Allowed event horizons: h+1 to h+12.
   - Required pre-fee average per-trade edge: >= 0.30 percent.
   - Annualized friction budget: <= 25 percent of starting capital.
 

@@ -34,11 +34,15 @@ Then:
 
 3. Profile binding (mandatory):
    - The first line of `main.py` MUST be a comment of the form
-     `# PROFILE: A-Maker` (or `A-Taker`, `B`, etc.) matching the
-     hypothesis declaration.
+     `# PROFILE: A-Maker` (or `A-Taker`, `B-Position`, `B`)
+     matching the hypothesis declaration.
    - The README MUST cite the same profile, the declared tier
-     (T or M), the target trades per day, the expected pre-fee
-     per-trade edge, and the fee budget gate arithmetic.
+     (T or M), the target trade frequency (per day for A-Maker /
+     A-Taker / B; per *week* for B-Position), the cited Data
+     Layer cell's `h+N` horizon (must fall in the declared
+     profile's allowed range: `h+1`..`h+12` for the intraday
+     profiles; `h+24`..`h+168` for B-Position), the expected
+     pre-fee per-trade edge, and the fee budget gate arithmetic.
 
 4. Code constraints:
    - Free parameters <= 3, declared at the top of `main.py` as

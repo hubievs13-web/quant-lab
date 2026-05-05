@@ -4,7 +4,7 @@ hypothesis: Hxxxx
 slug: short_slug
 created: YYYY-MM-DD
 status: draft   # draft | ready_for_qc | submitted | verdict_pending | closed
-profile: A-Maker | A-Taker | B
+profile: A-Maker | A-Taker | B-Position | B
 execution_tier: M | T
 ---
 
