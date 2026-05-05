@@ -62,7 +62,7 @@ counts as FAIL for the verdict.
    - A-Maker / A-Taker / B: 5 to 15 trades per day (A-Taker 1 to
      3), Tier M for A-Maker, Tier T for A-Taker / B, cell
      horizon `h+1`..`h+12`.
-   - B-Position: 5 to 15 trades per *week*, Tier M, cell horizon
+   - B-Position: 1 to 6 trades per *week*, Tier M, cell horizon
      `h+24`..`h+168`.
    A hypothesis that pairs an intraday profile with a multi-day
    horizon (or vice versa) FAILS this check.
@@ -100,8 +100,16 @@ counts as FAIL for the verdict.
    `decisions_index.md` is articulated, not just asserted.
 10. Lookahead-bias check enumerates each feature with its
     timestamp relative to the decision bar. No leakage.
-11. Falsification criteria are pre-registered numeric thresholds,
-    not tunable knobs.
+11. Falsification criteria are pre-registered as **explicit
+    numeric thresholds** in the hypothesis note, not pointer-style
+    references like "criteria 1 to 6 of the framework". The note
+    MUST spell out: trade-count floor (intraday >= 300, swing >=
+    30), OOS Sharpe > 1.0, OOS net average trade > 0, max drawdown
+    < 25 percent, pre-fee per-trade floor for the declared tier
+    (Tier T >= 0.30 percent, Tier M >= 0.20 percent), the WR / PF
+    condition (WR >= 50 percent in IS and OOS, OR PF >= 1.25 with
+    stable payoff), and the MC P5 > starting-capital condition.
+    Missing any of these numbers FAILS this check.
 12. Free parameters are <= 3, listed by name, and each is
     justified a priori (mechanism-derived, not from a parameter
     sweep).

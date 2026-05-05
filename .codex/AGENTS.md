@@ -92,10 +92,14 @@ that does not match any profile.
 
 - Profile B-Position (multi-day swing on the same $200 account)
   - Starting capital: USD 200.
-  - Target trades per week: 5 to 15 (roughly 1 to 3 per trading day,
-    each held for 1 to 7 days). Annualized this gives ~260 to ~780
-    closed trades, well above the 300-trade Falsification threshold
-    over a 3-year backtest.
+  - Target trades per week: 1 to 6. Lower bound 1 yields ~52 trades
+    per year, which clears the 30-trade swing Falsification threshold
+    over a 3-year backtest with margin. Upper bound 6 is the hard
+    ceiling implied by the friction budget at $200 / 1x notional /
+    Tier M (`6 * 52 * 200 * 0.0008 / 200 = 0.25`); going above 6
+    fails the fee budget gate before any edge is collected. Holding
+    period is 1 to 7 days per trade, so on h+72 cells the rate is
+    bounded further by available concurrent capital.
   - Execution tier: M (maker-mostly), with the same adverse-selection
     rule and fallback policy as Profile A-Maker. Multi-day holds make
     the Tier M floor easier to clear because per-trade pre-fee edge
@@ -107,6 +111,9 @@ that does not match any profile.
     Tier M floor as A-Maker; the lower friction is what makes the
     longer hold viable, not a different floor).
   - Annualized friction budget: <= 25 percent of starting capital.
+    Because the upper trade band is calibrated to this budget at 1x
+    notional, leverage > 1x tightens the effective per-week ceiling
+    proportionally (e.g. 2x notional caps trades at 3 per week).
 
 - Profile B (paper or larger account, taker; legacy v0 profile)
   - Starting capital: USD 5000 or higher.
