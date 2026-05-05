@@ -54,10 +54,18 @@ counts as FAIL for the verdict.
    check.
 5. **Profile match.** The hypothesis declares one of the
    operating profiles defined in `.codex/AGENTS.md` Section 3
-   (Profile A-Maker, Profile A-Taker, Profile B, or another
-   profile explicitly added there). PASS only if the declared
-   profile is one of these and the hypothesis's stated frequency
-   and tier match the profile.
+   (Profile A-Maker, Profile A-Taker, Profile B-Position,
+   Profile B, or another profile explicitly added there). PASS
+   only if the declared profile is one of these AND the
+   hypothesis's stated frequency, tier, and the cited Data Layer
+   cell's horizon all match the profile:
+   - A-Maker / A-Taker / B: 5 to 15 trades per day (A-Taker 1 to
+     3), Tier M for A-Maker, Tier T for A-Taker / B, cell
+     horizon `h+1`..`h+12`.
+   - B-Position: 5 to 15 trades per *week*, Tier M, cell horizon
+     `h+24`..`h+168`.
+   A hypothesis that pairs an intraday profile with a multi-day
+   horizon (or vice versa) FAILS this check.
 6. **Pre-fee edge floor.** The expected pre-fee per-trade edge
    from the cited evidence clears the floor for the declared tier
    (Tier T >= 0.30 percent, Tier M >= 0.20 percent). PASS only if
@@ -67,9 +75,10 @@ counts as FAIL for the verdict.
    declared profile values:
 
    ```
-   notional_per_trade = starting_capital * margin_fraction * leverage
-   annual_friction    = trades_per_day * 365
-                        * notional_per_trade * round_trip_friction
+   notional_per_trade  = starting_capital * margin_fraction * leverage
+   trades_per_year     = trades_per_day * 365      # A-Maker / A-Taker / B
+                       = trades_per_week * 52      # B-Position
+   annual_friction     = trades_per_year * notional_per_trade * round_trip_friction
    ```
 
    Use the friction number for the declared tier from
@@ -122,13 +131,19 @@ counts as FAIL for the verdict.
       is available).
     - Tier T hypothesis: `T sign-stable = yes` AND `p-value <= 0.05`.
     Direction enforcement:
-    - `direction: long` requires `full_net > 0` for the matching
-      tier (cell must appear in a Long section).
-    - `direction: fade` requires `full_net < 0` for the matching
-      tier (cell must appear in a Fade section). The strategy code
-      must trade *against* the event direction, and the README must
-      explicitly justify why the negative-net signal is exploitable
-      (e.g. forced unwinds, liquidation cascades, premium reversion).
+    - `direction: long` requires `full_mean > friction` for the
+      matching tier (so `full_net > 0`); cell must appear in a Long
+      section.
+    - `direction: fade` requires `full_mean < -friction` for the
+      matching tier (so the displayed `fade net` in the Fade section
+      is positive after paying friction once on the shorted return).
+      Cells with small negative `full_net` but `|mean| < friction`
+      do NOT appear in Fade sections and FAIL this check; if a
+      hypothesis cites such a cell, the auditor MUST reject it. The
+      strategy code must trade *against* the event direction, and
+      the README must explicitly justify why the reliably negative
+      signal is exploitable (e.g. forced unwinds, liquidation
+      cascades, premium reversion).
     Cells with insufficient n (`INSUFFICIENT_N` verdict in either
     report) FAIL this check. Cells absent from both reports FAIL
     this check (the hypothesis is operating below the n>=80

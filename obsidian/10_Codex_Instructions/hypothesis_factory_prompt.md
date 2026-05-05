@@ -53,9 +53,14 @@ sections are an automatic stop.
    distinct mechanism, stop.
 6. **Operating profile.** Declare exactly one operating profile
    from `.codex/AGENTS.md` Section 3 (Profile A-Maker, A-Taker,
-   B). Do not invent a profile. The chosen profile fixes the
-   starting capital, the target trades per day, the execution
-   tier (T or M), and the pre-fee edge floor.
+   B-Position, B). Do not invent a profile. The chosen profile
+   fixes the starting capital, the target trade frequency (per
+   day for A-Maker / A-Taker / B; per *week* for B-Position),
+   the execution tier (T or M), the pre-fee edge floor, and the
+   allowed event-horizon range (`h+1`..`h+12` for the intraday
+   profiles; `h+24`..`h+168` for B-Position). The cited Data
+   Layer cell's horizon MUST fall in the declared profile's
+   range, otherwise stop and pick a different cell or profile.
 
 7. **Fees and slippage survival check.** Use the friction and
    floor for the declared tier from
@@ -68,10 +73,11 @@ sections are an automatic stop.
 8. **Fee budget gate.** Show the arithmetic:
 
    ```
-   notional_per_trade = starting_capital * margin_fraction * leverage
-   annual_friction    = trades_per_day * 365
-                        * notional_per_trade * round_trip_friction
-   ratio              = annual_friction / starting_capital
+   notional_per_trade  = starting_capital * margin_fraction * leverage
+   trades_per_year     = trades_per_day * 365      # A-Maker / A-Taker / B
+                       = trades_per_week * 52      # B-Position
+   annual_friction     = trades_per_year * notional_per_trade * round_trip_friction
+   ratio               = annual_friction / starting_capital
    ```
 
    The hypothesis is valid only if `ratio <= 0.25`. If the ratio

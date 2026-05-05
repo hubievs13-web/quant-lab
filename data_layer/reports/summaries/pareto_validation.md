@@ -1,6 +1,6 @@
 # Pareto Validation (BTCUSDT vs ETHUSDT)
 
-Generated: 2026-05-05 15:41 UTC. Binance only. Fee+slippage proxy = 0.18%.
+Generated: 2026-05-05 16:09 UTC. Binance only. Fee+slippage proxy = 0.18%.
 
 ## Decision
 

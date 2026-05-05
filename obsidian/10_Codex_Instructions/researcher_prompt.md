@@ -44,17 +44,28 @@ Then:
      absent from that file FAIL the auditor's stability gate and
      must not be proposed,
    - declared `direction` matches the section the row appears in:
-     `direction: long` for a Long section (positive net), or
-     `direction: fade` for a Fade section (reliably *negative* net
-     where the strategy will trade *against* the event),
-   - the row is not on a horizon longer than the declared profile
-     allows (Profile A-Maker and A-Taker target intraday
-     holdings; horizons of `h+24` or longer typically violate
-     "5-15 trades/day"),
-   - the implied pre-fee per-trade edge magnitude (`|net| + fee`
-     for the relevant tier) clears the floor for the declared
-     execution tier (Tier T >= 0.30 percent, Tier M >= 0.20
-     percent) with a documented margin.
+     `direction: long` for a Long section (positive long-direction
+     net; long trade clears friction by itself), or `direction:
+     fade` for a Fade section (positive fade-direction net; the
+     strategy trades *against* the event and clears friction in the
+     opposite direction). Note: the displayed `net` in fade sections
+     is already the realised fade-direction net after the matching
+     tier's friction, so a positive number there means a profitable
+     fade.
+   - the row's event horizon matches the declared profile's allowed
+     horizon range from `.codex/AGENTS.md` Section 3:
+     - Profile A-Maker / A-Taker / B: `h+1` to `h+12`,
+     - Profile B-Position: `h+24` to `h+168`.
+     A cell whose horizon does not fit any profile MUST be paired
+     with the appropriate profile in the hypothesis, not coerced
+     into the wrong one.
+   - the cited pre-fee per-trade edge clears the floor for the
+     declared execution tier (Tier T >= 0.30 percent, Tier M >=
+     0.20 percent) with a documented margin. For long candidates,
+     pre-fee = `net + friction`. For fade candidates, the displayed
+     fade `net` is *already* post-friction, so pre-fee = `net + 2 *
+     friction` (one friction is the cost paid; the other recovers
+     the unconditional `mean_forward_return` magnitude).
 
 3. If zero rows clear all four filters, return one of:
    - `no candidate this session: leaderboard does not yield a

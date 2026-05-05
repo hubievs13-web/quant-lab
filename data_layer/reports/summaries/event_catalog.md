@@ -1,6 +1,6 @@
 # Event Catalog
 
-Last refresh: 2026-05-05 15:41 UTC.
+Last refresh: 2026-05-05 16:09 UTC.
 Source: `data_layer/store/processed/events/binance/<SYMBOL>/<TF>.parquet`.
 
 | event_type | 5m BTC | 5m ETH | 1h BTC | 1h ETH |

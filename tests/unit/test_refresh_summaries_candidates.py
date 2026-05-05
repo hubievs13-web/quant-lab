@@ -144,6 +144,48 @@ def test_research_candidates_lists_fade_when_negative_net(tmp_path, monkeypatch)
     assert "DEMO" in tier_m_fade
 
 
+def test_research_candidates_excludes_fade_when_mean_within_friction(tmp_path, monkeypatch):
+    # Bug fix regression: a cell with `full_mean` slightly positive
+    # (e.g. +0.01%) and Tier T friction 0.18% has `full_net = -0.17%`.
+    # The pre-fix filter `full_net < 0` would (incorrectly) surface
+    # this in the fade section, but a fade trade pays friction *again*
+    # on a near-zero shorted return -> realised fade net = -0.19% (loss).
+    # The corrected filter requires `full_mean < -friction`, so this
+    # cell must NOT appear in any fade section.
+    btc_wf = pd.DataFrame([_wf_row("BTCUSDT", 200, 0.01, True, True)])
+    btc_pm = pd.DataFrame([_pm_row("BTCUSDT", 200, 0.01, p=0.01)])
+    _patch_paths(monkeypatch, tmp_path)
+    _seed_stability(tmp_path, btc_5m_wf=btc_wf, btc_5m_pm=btc_pm)
+    rs.refresh_research_candidates_summary()
+    out = (tmp_path / "reports" / "summaries" / "research_candidates.md").read_text()
+    tier_t_fade = out.split("## Tier T fade candidates")[1].split("## ")[0]
+    tier_m_fade = out.split("## Tier M fade candidates")[1].split("## ")[0]
+    assert "None" in tier_t_fade
+    assert "None" in tier_m_fade
+
+
+def test_research_candidates_fade_displays_positive_fade_direction_net(tmp_path, monkeypatch):
+    # full_mean = -0.40% means a fade trade earns +0.40% raw and
+    # +0.22% net (Tier T) / +0.30% net (Tier M) after the matching
+    # tier's friction. The displayed `net` column in fade sections
+    # must reflect this realised fade-direction net, not the long-
+    # direction net.
+    btc_wf = pd.DataFrame([_wf_row("BTCUSDT", 150, -0.40, True, True)])
+    btc_pm = pd.DataFrame([_pm_row("BTCUSDT", 150, -0.40, p=0.01)])
+    _patch_paths(monkeypatch, tmp_path)
+    _seed_stability(tmp_path, btc_5m_wf=btc_wf, btc_5m_pm=btc_pm)
+    rs.refresh_research_candidates_summary()
+    out = (tmp_path / "reports" / "summaries" / "research_candidates.md").read_text()
+    tier_t_fade = out.split("## Tier T fade candidates")[1].split("## ")[0]
+    tier_m_fade = out.split("## Tier M fade candidates")[1].split("## ")[0]
+    # Tier T fade net = -(-0.40) - 0.18 = +0.22% ; Tier M = +0.30%
+    assert "+0.22%" in tier_t_fade
+    assert "+0.30%" in tier_m_fade
+    # And no negative-net rendering in either fade section anymore.
+    assert "-0.58%" not in tier_t_fade
+    assert "-0.50%" not in tier_m_fade
+
+
 def test_research_candidates_cross_symbol_section(tmp_path, monkeypatch):
     btc_wf = pd.DataFrame([_wf_row("BTCUSDT", 110, 0.40, True, True)])
     btc_pm = pd.DataFrame([_pm_row("BTCUSDT", 110, 0.40, p=0.01)])

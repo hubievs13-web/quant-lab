@@ -1,6 +1,6 @@
 # Walk-Forward Stability
 
-Last refresh: 2026-05-05 15:41 UTC.
+Last refresh: 2026-05-05 16:09 UTC.
 Splits each (symbol, tf, event_type, horizon) cell with `n >= 80` chronologically into 3 folds and reports per-fold net after taker (Tier T) and maker (Tier M) friction. A cell is `STABLE` if every fold's net has the same sign as the full-sample net.
 
 Showing top 20 cells by `full_net_maker` (out of 108 with `n >= 80`).

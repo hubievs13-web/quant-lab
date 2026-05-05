@@ -4,7 +4,7 @@ slug: short_slug
 created: YYYY-MM-DD
 mechanism_class: funding | oi | basis | lead_lag | orderflow | other
 symbols: [BTCUSDT, ETHUSDT]
-profile: A-Maker | A-Taker | B   # candidate profile (`.codex/AGENTS.md` Section 3)
+profile: A-Maker | A-Taker | B-Position | B   # candidate profile (`.codex/AGENTS.md` Section 3)
 execution_tier: M | T
 ---
 

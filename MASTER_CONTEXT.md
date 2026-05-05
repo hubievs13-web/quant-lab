@@ -197,8 +197,9 @@ until regenerated.
 Pipeline changes (2026-05-03):
 - Pre-fee floor raised from 0.10% to 0.30% (Tier T) / 0.20% (Tier M).
 - New operating profiles (`.codex/AGENTS.md` Section 3): A-Maker (default for $200 live,
-  5-15 trades/day, maker), A-Taker ($200 live, 1-3 trades/day, taker),
-  B (>= $5000, 5-15 trades/day, taker).
+  5-15 trades/day, maker, h+1..h+12), A-Taker ($200 live, 1-3 trades/day, taker,
+  h+1..h+12), B-Position ($200 live, 5-15 trades/week, maker, h+24..h+168 multi-day),
+  B (>= $5000, 5-15 trades/day, taker, h+1..h+12; legacy v0).
 - Pre-backtest auditor adds three gates: profile match, fee budget
   (annual_friction / starting_capital <= 25%), and cross-symbol Pareto evidence.
 - Researcher and hypothesis-factory prompts now require a quoted numeric

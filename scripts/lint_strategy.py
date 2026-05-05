@@ -69,6 +69,7 @@ from pathlib import Path
 KNOWN_PROFILES: dict[str, str] = {
     "A-Maker": "M",
     "A-Taker": "T",
+    "B-Position": "M",
     "B": "T",
 }
 
