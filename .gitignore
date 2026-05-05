@@ -15,9 +15,10 @@ results/raw/
 *.jsonl
 *.log
 
-# Ignore CSV by default, but keep experiment summary
+# Ignore CSV by default, but keep experiment summary and QC static data
 *.csv
 !results/experiments.csv
+!qc_static_data/**/*.csv
 
 # Python
 __pycache__/
