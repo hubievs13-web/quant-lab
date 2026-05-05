@@ -101,12 +101,15 @@ Result ratio: ... (must be <= 0.25 to pass).
 ## 4. Expected trade frequency
 
 - Per day per symbol (A-Maker / A-Taker / B): ...
-- Per week per symbol (B-Position): ...
+- Per week per symbol (B-Position): ... (must fall in 1..6).
 - Per backtest window: ...
-- Must plausibly reach >= 300 trades over the OOS window to satisfy
-  criterion 1 of the framework. For B-Position this typically requires
-  a 3-year backtest (5 trades/week * 52 weeks * 2 symbols ~= 520
-  trades; 15 trades/week ~= 1560 trades).
+- Profile-specific Falsification trade-count floor:
+  - A-Maker / A-Taker / B (intraday): >= 300 trades over the OOS
+    window (criterion 1, intraday branch).
+  - B-Position (multi-day swing): >= 30 trades over the OOS window
+    (criterion 1, swing branch). At 1 trade/week with 2 symbols a
+    3-year backtest yields ~312 trades; at 6 trades/week ~1872
+    trades. Below 30 trades the verdict is INCONCLUSIVE, not PASS.
 
 ## 5. Free parameters
 
@@ -138,9 +141,30 @@ Enumerate at least 3 specific ways this edge can fail. Do not write
 
 ## 9. Success / failure definition
 
-- Success: criteria 1 to 6 all pass on OOS, then MC P5 > starting.
-- Failure: any criterion fails.
-- Trade-count expectation over window.
+State the numeric thresholds explicitly (do NOT just write "criteria
+1 to 6"; the auditor rejects pointer-style references). Copy the
+numbers from `.codex/AGENTS.md` Section 6 and the matching profile
+in Section 3:
+
+- Trade count over OOS window:
+  - Intraday profiles (A-Maker / A-Taker / B): >= 300.
+  - Swing profile (B-Position): >= 30.
+- OOS Sharpe: > 1.0.
+- OOS net average trade: > 0.
+- Max drawdown: < 25 percent.
+- Pre-fee average trade clears the matching tier floor:
+  - Tier T (A-Taker / B): >= 0.30 percent.
+  - Tier M (A-Maker / B-Position): >= 0.20 percent.
+- Win-rate / profit-factor: WR >= 50 percent in IS and OOS, OR PF
+  >= 1.25 with stable payoff ratio.
+- Monte Carlo (only after the six pre-fee criteria pass): 1000
+  trade-shuffle simulations, P5 of final equity > starting capital.
+
+Failure: any single criterion above fails. No partial credit.
+
+State the trade-count expectation over the chosen backtest window
+explicitly (lower-bound and upper-bound), so the auditor can verify
+the criterion-1 floor is plausibly reachable.
 
 ## 10. Risk controls
 
