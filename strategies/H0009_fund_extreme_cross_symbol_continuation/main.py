@@ -1,7 +1,7 @@
 # PROFILE: B-Position
 from AlgorithmImports import *
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import math
 
 
@@ -389,7 +389,7 @@ class FundExtremeCrossSymbolContinuation(QCAlgorithm):
         self.set_account_currency("USD")
         self.set_cash(200)
 
-        self.set_brokerage_model(BrokerageName.BINANCE, AccountType.MARGIN)
+        self.set_brokerage_model(BrokerageName.BINANCE_FUTURES, AccountType.MARGIN)
 
         self.states = {}
         self.funding_to_trade_symbol = {}
@@ -423,6 +423,7 @@ class FundExtremeCrossSymbolContinuation(QCAlgorithm):
                 funding = self.add_data(H0009FundingRateData, funding_ticker, Resolution.HOUR)
                 state.funding_symbol = funding.symbol
                 self.funding_to_trade_symbol[funding.symbol] = trade_symbol
+                self._warmup_funding_history(state, funding_ticker)
 
         if not self.custom_data_ready:
             self.trading_disabled = True
@@ -436,6 +437,49 @@ class FundExtremeCrossSymbolContinuation(QCAlgorithm):
             f"maker_fee_per_side={TIER_M_PER_SIDE_FEE:.4%} "
             f"adverse_threshold_bp={MAKER_DEFAULT_ADVERSE_THRESHOLD_BP:.1f} "
             f"custom_data_ready={self.custom_data_ready}"
+        )
+
+    def _warmup_funding_history(self, state, funding_ticker):
+        url = self.get_parameter(funding_ticker + "_URL")
+        if url is None or url.strip() == "":
+            self.debug(f"FUNDING_WARMUP_MISSING_URL symbol={state.ticker} param={funding_ticker}_URL")
+            return
+        csv_text = self.download(url)
+        if csv_text is None or csv_text.strip() == "":
+            self.debug(f"FUNDING_WARMUP_EMPTY symbol={state.ticker} url={url}")
+            return
+        pre_start_n = 0
+        latest_pre_start = None
+        start_dt_utc = datetime(
+            self.start_date.year,
+            self.start_date.month,
+            self.start_date.day,
+            tzinfo=timezone.utc,
+        )
+        for line in csv_text.splitlines():
+            if line is None:
+                continue
+            row = line.strip()
+            if row == "" or row.startswith("timestamp_utc"):
+                continue
+            parts = row.split(",")
+            if len(parts) < 3:
+                continue
+            try:
+                funding_time = datetime.fromisoformat(parts[0].rstrip("Z")).replace(tzinfo=timezone.utc)
+                funding_rate = float(parts[2])
+            except Exception:
+                continue
+            if funding_time >= start_dt_utc:
+                continue
+            state.funding_history.append(funding_rate)
+            pre_start_n += 1
+            latest_pre_start = funding_time
+        if latest_pre_start is not None:
+            state.last_funding_time = latest_pre_start.replace(tzinfo=None)
+        self.debug(
+            "FUNDING_WARMUP_LOADED "
+            f"symbol={state.ticker} pre_start_n={pre_start_n} latest_pre_start={latest_pre_start}"
         )
 
     def on_data(self, data):
@@ -569,20 +613,23 @@ class FundExtremeCrossSymbolContinuation(QCAlgorithm):
             self._submit_signal(state, side, funding_time, funding_rate, zscore)
 
     def _fund_extreme_side(self, state, funding_rate):
-        fallback_abs_rate = 5.0 / 10000.0
         zscore = 0.0
         side = 0
-        if len(state.funding_history) >= 90:
-            values = list(state.funding_history)
-            mean = sum(values) / len(values)
-            variance = sum((value - mean) * (value - mean) for value in values) / len(values)
-            std = math.sqrt(variance)
-            if std > 0.0:
-                zscore = (funding_rate - mean) / std
-                if abs(zscore) >= FUNDING_EXTREME_ZSCORE:
-                    side = 1
-        if side == 0 and abs(funding_rate) >= fallback_abs_rate:
-            side = 1
+        have = len(state.funding_history)
+        if have < 90:
+            self.debug(
+                "FUNDING_WARMUP_INSUFFICIENT "
+                f"symbol={state.ticker} have={have} need=90"
+            )
+            return 0, 0.0
+        values = list(state.funding_history)
+        mean = sum(values) / len(values)
+        variance = sum((value - mean) * (value - mean) for value in values) / len(values)
+        std = math.sqrt(variance)
+        if std > 0.0:
+            zscore = (funding_rate - mean) / std
+            if abs(zscore) >= FUNDING_EXTREME_ZSCORE:
+                side = 1
         return side, zscore
 
     def _submit_signal(self, state, side, funding_time, funding_rate, zscore):
@@ -641,7 +688,7 @@ class FundExtremeCrossSymbolContinuation(QCAlgorithm):
     def _position_quantity(self, symbol, price):
         if price <= 0.0:
             return 0.0
-        notional = self.portfolio.total_portfolio_value
+        notional = self.portfolio.total_portfolio_value * 0.48
         raw_quantity = notional / price
         lot_size = float(self.securities[symbol].symbol_properties.lot_size)
         if lot_size <= 0.0:
