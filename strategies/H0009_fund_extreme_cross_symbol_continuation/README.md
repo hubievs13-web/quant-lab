@@ -85,17 +85,21 @@ timestamp_utc,symbol,funding_rate,...
 ```
 
 Rows must be chronological UTC timestamps. Funding values are used only after their own timestamp.
+During `initialize`, the strategy also calls `Download(...)` on each CSV URL and backfills
+pre-start funding rows (`timestamp_utc < start_date`) into the per-symbol funding history;
+the `add_data` stream then continues from `start_date` onward.
 
 ## Execution Model
 
 - Add BTCUSDT and ETHUSDT with `add_crypto_future(..., Resolution.HOUR, market=Market.BINANCE)`.
 - Maintain a rolling funding history per symbol.
 - Fire `FUND_EXTREME` when `|funding_rate_zscore_30d| >= 2`; since funding is observed every 8 hours, the z-score branch requires at least 90 observations.
-- If history is too short or standard deviation is zero, use the event catalog fallback `|funding_rate| >= 5 bp`.
+- The 5 bp absolute-rate fallback was removed; signals are z-score only, and warmup now seeds pre-start funding history to close the initialization gap.
 - Positive funding extreme trades long; negative funding extreme also trades long. The side field remains in logs and data structures, but is hard-coded to `+1` for this hypothesis.
 - Submit a maker-entry proxy limit at the latest completed 1h close.
 - On the next 1h bar, enter only if the bar touched the limit and closed at least 0.05 percent adverse to the fill side.
 - Cancel unfilled or non-adverse maker entries; no taker fallback.
+- Per-symbol notional is sized at 48 percent of total portfolio value so two simultaneous positions at 2x leverage target ~96 percent aggregate margin usage and leave headroom for fees/rounding.
 - Exit at h+72 hours, or earlier if the per-trade drawdown reaches -1 percent.
 - Project-level hard stop: if drawdown from session/account peak reaches 20 percent, flatten and stop.
 
@@ -134,7 +138,7 @@ Before relying on any backtest:
 2. Paste `strategies/H0009_fund_extreme_cross_symbol_continuation/main.py`.
 3. Set `H0009_FUNDING_BTCUSDT_URL` and `H0009_FUNDING_ETHUSDT_URL` to hosted chronological CSVs.
 4. Run a 3-7 day smoke test.
-5. Confirm BTCUSDT and ETHUSDT subscriptions load without symbol mapping or brokerage warnings.
+5. Confirm BTCUSDT and ETHUSDT subscriptions load under `BrokerageName.BINANCE_FUTURES` with no brokerage/model mismatch warnings (cash-as-margin for USD-M futures requires the futures brokerage model, not spot Binance).
 6. Confirm no `CUSTOM_DATA_PATH_MISSING` or `CUSTOM_DATA_INVALID` lines appear.
 7. Confirm any `ENTRY` line has `execution_bar_time` strictly later than `signal_bar_time`.
 8. If any data, symbol, brokerage, leverage, or custom-data warning appears, stop and send logs for review before a full backtest.
